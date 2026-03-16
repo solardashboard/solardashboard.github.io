@@ -166,6 +166,19 @@
       color: var(--sun);
     }
 
+    /* Sidebar drag target */
+    .sidebar.drop-target {
+      border-right-color: rgba(245,158,11,0.6);
+      background: rgba(245,158,11,0.04);
+      transition: background 0.15s, border-right-color 0.15s;
+    }
+    .sidebar.drop-target .sidebar-empty {
+      color: var(--sun);
+    }
+    .sidebar.drop-target .se-icon::after {
+      content: ' 📂';
+    }
+
     /* Lead list */
     .lead-list {
       flex: 1;
@@ -314,6 +327,110 @@
     .detail-btn:hover { opacity: 0.85; }
     .detail-btn.primary { background: linear-gradient(135deg, var(--sun), var(--sun-dark)); color: var(--dark); }
     .detail-btn.secondary { background: rgba(255,255,255,0.07); color: var(--text); }
+    .detail-btn.save-btn { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); }
+    .detail-btn.save-btn.saved { background: rgba(245,158,11,0.15); color: var(--sun); border-color: rgba(245,158,11,0.3); }
+
+    /* IGN Thumbnail */
+    .detail-thumb-wrap {
+      position: relative; cursor: zoom-in;
+      margin-bottom: 0.5rem; border-radius: 10px; overflow: hidden;
+    }
+    .detail-thumb {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover;
+      background: var(--dark-3);
+      display: block;
+      transition: opacity 0.15s;
+    }
+    .detail-thumb-wrap:hover .detail-thumb { opacity: 0.85; }
+    .detail-thumb-zoom {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.15s;
+      font-size: 1.5rem;
+      background: rgba(15,23,42,0.3);
+    }
+    .detail-thumb-wrap:hover .detail-thumb-zoom { opacity: 1; }
+
+    .thumb-links {
+      display: flex; gap: 0.5rem; margin-bottom: 0.85rem;
+    }
+    .thumb-link {
+      flex: 1; text-align: center;
+      background: var(--dark-3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--muted); text-decoration: none;
+      transition: all 0.15s;
+    }
+    .thumb-link:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(10,15,28,0.92);
+      backdrop-filter: blur(6px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+    .lightbox-img-wrap {
+      position: relative;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      max-width: min(600px, 90vw);
+      width: 100%;
+    }
+    .lightbox-img {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; display: block;
+      background: var(--dark-3);
+    }
+    .lightbox-close {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      background: rgba(15,23,42,0.8); border: none;
+      color: var(--text); font-size: 1.1rem;
+      width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .lightbox-close:hover { background: rgba(15,23,42,1); }
+    .lightbox-bar {
+      max-width: min(600px, 90vw); width: 100%;
+      background: var(--dark-2);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      padding: 0.9rem 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-name {
+      font-size: 0.92rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 0.2rem;
+    }
+    .lb-meta { font-size: 0.78rem; color: var(--muted); }
+    .lb-score {
+      background: rgba(245,158,11,0.15);
+      color: var(--sun); font-size: 0.78rem; font-weight: 800;
+      padding: 0.3rem 0.65rem; border-radius: 8px;
+      white-space: nowrap;
+    }
+    .lb-save {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted); font-size: 0.8rem; font-weight: 700;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .lb-save:hover { color: var(--text); }
+    .lb-save.saved { background: rgba(245,158,11,0.15); color: var(--sun); border-color: rgba(245,158,11,0.3); }
 
     /* ── PASSWORD GATE ── */
     .gate {
@@ -514,9 +631,7 @@
         </div>
         <div class="filter-row">
           <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">Tous</button>
-          <button class="filter-btn" data-filter="new" onclick="setFilter(this)">Nouveaux</button>
-          <button class="filter-btn" data-filter="contact" onclick="setFilter(this)">En cours</button>
-          <button class="filter-btn" data-filter="signed" onclick="setFilter(this)">Signés</button>
+          <button class="filter-btn" data-filter="saved" onclick="setFilter(this)">⭐ Sauvegardés</button>
         </div>
       </div>
       <div class="lead-list" id="leadList"></div>
@@ -566,6 +681,16 @@
 
         <div class="detail-body">
 
+          <!-- Vue aérienne IGN -->
+          <div class="detail-thumb-wrap" onclick="openLightbox()">
+            <img class="detail-thumb" id="dp-thumb" src="" alt="Vue aérienne" />
+            <div class="detail-thumb-zoom">🔍</div>
+          </div>
+          <div class="thumb-links">
+            <a class="thumb-link" id="dp-gmaps" href="#" target="_blank">📍 Google Maps</a>
+            <a class="thumb-link" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
+          </div>
+
           <div class="detail-section">
             <div class="detail-section-title">⚡ Potentiel solaire</div>
             <div class="detail-grid">
@@ -582,7 +707,7 @@
                 <div class="detail-field-val" id="dp-surface"></div>
               </div>
               <div class="detail-field">
-                <div class="detail-field-label">Conso. (kWh/m²)</div>
+                <div class="detail-field-label">Conso. (MWh)</div>
                 <div class="detail-field-val" id="dp-consumption"></div>
               </div>
               <div class="detail-field">
@@ -651,10 +776,27 @@
         <div class="detail-footer">
           <button class="detail-btn primary" id="dp-btn-phone">📞 Appeler</button>
           <button class="detail-btn secondary" id="dp-btn-email">✉️ Email</button>
+          <button class="detail-btn save-btn" id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
         </div>
       </div>
     </div>
 
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-img-wrap">
+      <img class="lightbox-img" id="lb-img" src="" alt="Vue aérienne IGN" />
+      <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    </div>
+    <div class="lightbox-bar">
+      <div class="lb-info">
+        <div class="lb-name" id="lb-name"></div>
+        <div class="lb-meta" id="lb-meta"></div>
+      </div>
+      <div class="lb-score" id="lb-score"></div>
+      <button class="lb-save" id="lb-save" onclick="toggleSave(); updateLightboxSave()">🤍 Sauvegarder</button>
+    </div>
   </div>
 
   <script>
@@ -690,22 +832,23 @@
     let currentSearch = '';
     let selectedId = null;
     const markerMap = {};
+    const savedIds = new Set();
 
     // ── MAP INIT ─────────────────────────────────────────────────────────────
     const map = L.map('map', { zoomControl: true }).setView([46.6, 2.5], 6);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap contributors © CARTO',
       maxZoom: 19
     }).addTo(map);
 
     // Custom icon factory
     function makeIcon(score, selected) {
-      const color = score >= 80 ? '#4ade80' : score >= 60 ? '#f59e0b' : '#94a3b8';
+      const color = score > 50 ? '#16a34a' : score >= 20 ? '#d97706' : '#64748b';
       const size = selected ? 38 : 30;
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 30 30">
-        <circle cx="15" cy="15" r="13" fill="${color}" fill-opacity="${selected ? 1 : 0.85}" stroke="${selected ? '#fff' : color}" stroke-width="${selected ? 2.5 : 1.5}"/>
-        <text x="15" y="19.5" text-anchor="middle" font-size="11" font-family="Inter,sans-serif" font-weight="800" fill="${score >= 80 ? '#0f172a' : score >= 60 ? '#0f172a' : '#1e293b'}">${score}</text>
+        <circle cx="15" cy="15" r="13" fill="${color}" fill-opacity="${selected ? 1 : 0.9}" stroke="${selected ? '#1e293b' : '#fff'}" stroke-width="${selected ? 2.5 : 1.5}"/>
+        <text x="15" y="19.5" text-anchor="middle" font-size="11" font-family="Inter,sans-serif" font-weight="800" fill="#fff">${score}</text>
       </svg>`;
       return L.divIcon({
         html: svg,
@@ -749,25 +892,37 @@
     initMarkers(LEADS);
     map.addLayer(cluster);
 
-    // ── DRAG & DROP GEOJSON ───────────────────────────────────────────────────
+    // ── DRAG & DROP GEOJSON (toute la page) ──────────────────────────────────
     const mapWrap = document.querySelector('.map-wrap');
     const dropOverlay = document.getElementById('dropOverlay');
+    const sidebar = document.querySelector('.sidebar');
     let dragCounter = 0;
 
-    mapWrap.addEventListener('dragenter', e => {
+    function showDropZone() {
+      dropOverlay.classList.add('active');
+      sidebar.classList.add('drop-target');
+    }
+    function hideDropZone() {
+      dropOverlay.classList.remove('active');
+      sidebar.classList.remove('drop-target');
+    }
+
+    document.addEventListener('dragenter', e => {
       e.preventDefault();
       dragCounter++;
-      dropOverlay.classList.add('active');
+      showDropZone();
     });
-    mapWrap.addEventListener('dragleave', () => {
-      dragCounter--;
-      if (dragCounter <= 0) { dragCounter = 0; dropOverlay.classList.remove('active'); }
+    document.addEventListener('dragleave', e => {
+      // Ignorer les événements qui restent dans la page
+      if (e.relatedTarget && document.contains(e.relatedTarget)) return;
+      dragCounter = 0;
+      hideDropZone();
     });
-    mapWrap.addEventListener('dragover', e => e.preventDefault());
-    mapWrap.addEventListener('drop', e => {
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', e => {
       e.preventDefault();
       dragCounter = 0;
-      dropOverlay.classList.remove('active');
+      hideDropZone();
       const file = e.dataTransfer.files[0];
       if (!file) return;
       if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
@@ -839,7 +994,7 @@
       LEADS = raw.map(l => ({
         ...l,
         score: Math.max(10, Math.min(99, Math.round((l.puissance_kwc / maxP) * 89) + 10))
-      }));
+      })).sort((a, b) => b.score - a.score);
 
       closeDetail();
       initMarkers(LEADS);
@@ -860,14 +1015,14 @@
     }
 
     // ── SIDEBAR ──────────────────────────────────────────────────────────────
-    function scoreClass(s) { return s >= 80 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low'; }
+    function scoreClass(s) { return s > 50 ? 'score-high' : s >= 20 ? 'score-mid' : 'score-low'; }
     function statusClass(s) {
       return { new: 's-new', contact: 's-contact', signed: 's-signed', lost: 's-lost' }[s] || 's-new';
     }
 
     function filteredLeads() {
       return LEADS.filter(l => {
-        const matchFilter = currentFilter === 'all' || l.status === currentFilter;
+        const matchFilter = currentFilter === 'all' || (currentFilter === 'saved' && savedIds.has(l.id));
         const matchSearch = l.name.toLowerCase().includes(currentSearch.toLowerCase());
         return matchFilter && matchSearch;
       });
@@ -918,6 +1073,65 @@
       renderList();
     }
 
+    // ── IGN THUMBNAIL ────────────────────────────────────────────────────────
+    function ignThumbnailUrl(lat, lng, px = 300) {
+      const d = 0.0015; // ~150m buffer — bbox carrée → image carrée, pas de distorsion
+      const bbox = `${lat - d},${lng - d},${lat + d},${lng + d}`;
+      return `https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap` +
+             `&LAYERS=ORTHOIMAGERY.ORTHOPHOTOS&STYLES=&FORMAT=image/jpeg` +
+             `&CRS=EPSG:4326&BBOX=${bbox}&WIDTH=${px}&HEIGHT=${px}`;
+    }
+
+    // ── LIGHTBOX ──────────────────────────────────────────────────────────────
+    function openLightbox() {
+      const l = LEADS.find(x => x.id === selectedId);
+      if (!l) return;
+      document.getElementById('lb-img').src   = ignThumbnailUrl(l.lat, l.lng, 600);
+      document.getElementById('lb-name').textContent = l.name;
+      document.getElementById('lb-meta').textContent =
+        [l.commune, l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : null,
+         l.area ? Math.round(l.area).toLocaleString('fr') + ' m²' : null]
+        .filter(Boolean).join(' · ');
+      document.getElementById('lb-score').textContent = `⚡ ${l.score}/100`;
+      updateLightboxSave();
+      document.getElementById('lightbox').classList.add('open');
+      document.addEventListener('keydown', onLightboxKey);
+    }
+
+    function closeLightbox(e) {
+      if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
+      document.getElementById('lightbox').classList.remove('open');
+      document.removeEventListener('keydown', onLightboxKey);
+    }
+
+    function onLightboxKey(e) { if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('open'); } }
+
+    function updateLightboxSave() {
+      const btn = document.getElementById('lb-save');
+      if (!btn || !selectedId) return;
+      const saved = savedIds.has(selectedId);
+      btn.textContent = saved ? '⭐ Sauvegardé' : '🤍 Sauvegarder';
+      btn.classList.toggle('saved', saved);
+    }
+
+    // ── SAVE ─────────────────────────────────────────────────────────────────
+    function toggleSave() {
+      if (!selectedId) return;
+      if (savedIds.has(selectedId)) { savedIds.delete(selectedId); }
+      else { savedIds.add(selectedId); }
+      updateSaveButton();
+      updateLightboxSave();
+      renderList();
+    }
+
+    function updateSaveButton() {
+      const btn = document.getElementById('dp-btn-save');
+      if (!btn || !selectedId) return;
+      const saved = savedIds.has(selectedId);
+      btn.textContent = saved ? '⭐ Sauvegardé' : '🤍 Sauvegarder';
+      btn.classList.toggle('saved', saved);
+    }
+
     // ── SELECT LEAD ──────────────────────────────────────────────────────────
     function selectLead(id) {
       selectedId = id;
@@ -930,7 +1144,7 @@
       });
 
       // Pan map
-      map.setView([l.lat, l.lng], Math.max(map.getZoom(), 13), { animate: true });
+      map.setView([l.lat, l.lng], 19, { animate: true });
 
       // Header
       document.getElementById('dp-name').textContent    = l.name;
@@ -966,6 +1180,14 @@
       document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
       document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
 
+      // Thumbnail + map links
+      document.getElementById('dp-thumb').src = ignThumbnailUrl(l.lat, l.lng);
+      document.getElementById('dp-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
+      document.getElementById('dp-streetview').href = `https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}`;
+
+      // Save button state
+      updateSaveButton();
+
       document.getElementById('detailPanel').classList.add('visible');
       renderList();
     }
@@ -979,17 +1201,29 @@
       renderList();
     }
 
-    // ── EXPORT CSV ───────────────────────────────────────────────────────────
+    // ── EXPORT CSV (sauvegardés uniquement) ──────────────────────────────────
     function exportCSV() {
-      const fl = filteredLeads();
-      const header = ['Nom','Score','Puissance','Surface','Statut','Lat','Lng'];
-      const rows = fl.map(l => [l.name, l.score, l.power, l.surface, l.statusLabel, l.lat, l.lng]);
-      const csv = [header, ...rows].map(r => r.join(';')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const toExport = LEADS.filter(l => savedIds.has(l.id));
+      if (!toExport.length) {
+        showToast('⚠️ Aucun prospect sauvegardé — utilisez ⭐ sur une fiche');
+        return;
+      }
+      const header = ['Nom','Rue','Code postal','Commune','NAF','Puissance kWc','Production MWh','Surface m2','Ratio autoprod','Orientation','Toit plat','Ombrages','Matériau','Directeur','Téléphone','Email','Site web','LinkedIn','Score','Lat','Lng'];
+      const rows = toExport.map(l => [
+        l.name, l.rue, l.code_postal, l.commune, l.naf,
+        l.puissance_kwc, l.production_mwh, Math.round(l.area),
+        l.ratio_autoproduction, l.orientation, l.toit_plat,
+        l.shadings, l.mat_toit_class,
+        l.director_name, l.phone, l.email, l.website, l.linkedin,
+        l.score, l.lat, l.lng
+      ]);
+      const csv = [header, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv, { type: 'text/csv;charset=utf-8;' }]);
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'prospects_solaires.csv';
+      a.download = `prospects_sauvegardés_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
+      showToast(`✅ ${toExport.length} prospect(s) exporté(s)`);
     }
 
     // ── INIT ─────────────────────────────────────────────────────────────────
