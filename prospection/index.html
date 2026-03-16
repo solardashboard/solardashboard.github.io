@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prospection — SolarDashboard</title>
+  <meta name="robots" content="noindex, nofollow" />
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -223,57 +224,230 @@
     /* Detail panel */
     .detail-panel {
       position: absolute;
-      bottom: 1.5rem; right: 1.5rem;
-      width: 300px;
+      top: 1rem; bottom: 1rem; right: 1rem;
+      width: 340px;
       background: var(--dark-2);
       border: 1px solid rgba(245,158,11,0.25);
       border-radius: 16px;
-      padding: 1.25rem;
       z-index: 500;
       display: none;
+      flex-direction: column;
       box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      overflow: hidden;
     }
-    .detail-panel.visible { display: block; }
+    .detail-panel.visible { display: flex; }
+    .detail-head {
+      padding: 1rem 1.1rem 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
     .detail-close {
       position: absolute; top: 0.75rem; right: 0.75rem;
       background: none; border: none; color: var(--muted);
       cursor: pointer; font-size: 1.1rem; padding: 0.25rem;
     }
     .detail-close:hover { color: var(--text); }
-    .detail-label {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    .detail-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
       text-transform: uppercase; color: var(--sun);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
     }
     .detail-name {
-      font-size: 1.05rem; font-weight: 700;
-      margin-bottom: 0.75rem;
+      font-size: 0.95rem; font-weight: 700; line-height: 1.35;
+      margin-bottom: 0.35rem; padding-right: 1.5rem;
+    }
+    .detail-address {
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .detail-badges {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+    .badge-naf {
+      background: rgba(56,189,248,0.12); color: #38bdf8;
+      font-size: 0.68rem; font-weight: 700;
+      padding: 0.2rem 0.5rem; border-radius: 5px;
+    }
+    .badge-status {
+      font-size: 0.68rem; font-weight: 700;
+      padding: 0.2rem 0.5rem; border-radius: 5px;
+    }
+
+    /* Scrollable body */
+    .detail-body {
+      flex: 1; overflow-y: auto; padding: 0.85rem 1.1rem;
+    }
+    .detail-body::-webkit-scrollbar { width: 3px; }
+    .detail-body::-webkit-scrollbar-thumb { background: var(--dark-3); border-radius: 3px; }
+
+    .detail-section { margin-bottom: 1rem; }
+    .detail-section-title {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.5rem;
     }
     .detail-grid {
       display: grid; grid-template-columns: 1fr 1fr;
-      gap: 0.6rem; margin-bottom: 1rem;
+      gap: 0.5rem;
     }
-    .detail-field { background: var(--dark-3); border-radius: 8px; padding: 0.6rem 0.75rem; }
-    .detail-field-label { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.2rem; }
-    .detail-field-val { font-size: 0.88rem; font-weight: 700; }
-    .detail-actions { display: flex; gap: 0.5rem; }
+    .detail-grid.cols-1 { grid-template-columns: 1fr; }
+    .detail-field { background: var(--dark-3); border-radius: 8px; padding: 0.55rem 0.7rem; }
+    .detail-field-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.15rem; }
+    .detail-field-val { font-size: 0.85rem; font-weight: 700; word-break: break-word; }
+    .detail-field-val a {
+      color: #38bdf8; text-decoration: none; font-weight: 600; font-size: 0.8rem;
+    }
+    .detail-field-val a:hover { text-decoration: underline; }
+
+    .detail-footer {
+      padding: 0.75rem 1.1rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; gap: 0.5rem;
+      flex-shrink: 0;
+    }
     .detail-btn {
-      flex: 1;
-      font-size: 0.8rem; font-weight: 700;
-      padding: 0.5rem;
-      border-radius: 8px; border: none; cursor: pointer;
-      transition: opacity 0.15s;
-      font-family: inherit;
+      flex: 1; font-size: 0.8rem; font-weight: 700;
+      padding: 0.5rem; border-radius: 8px; border: none;
+      cursor: pointer; transition: opacity 0.15s; font-family: inherit;
     }
     .detail-btn:hover { opacity: 0.85; }
-    .detail-btn.primary {
+    .detail-btn.primary { background: linear-gradient(135deg, var(--sun), var(--sun-dark)); color: var(--dark); }
+    .detail-btn.secondary { background: rgba(255,255,255,0.07); color: var(--text); }
+
+    /* ── PASSWORD GATE ── */
+    .gate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gate.hidden { display: none; }
+    .gate-card {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 2.5rem 2.5rem 2rem;
+      width: 340px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .gate-logo {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 1.25rem;
+    }
+    .gate-card h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .gate-card p  { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .gate-input {
+      width: 100%;
+      background: var(--dark-3);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.95rem; font-family: inherit;
+      padding: 0.7rem 1rem;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.15s;
+    }
+    .gate-input:focus { border-color: rgba(245,158,11,0.5); }
+    .gate-input.error { border-color: #f87171; animation: shake 0.3s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+    .gate-btn {
+      width: 100%;
       background: linear-gradient(135deg, var(--sun), var(--sun-dark));
       color: var(--dark);
+      font-weight: 700; font-size: 0.95rem; font-family: inherit;
+      border: none; border-radius: 10px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
     }
-    .detail-btn.secondary {
-      background: rgba(255,255,255,0.07);
-      color: var(--text);
+    .gate-btn:hover { opacity: 0.88; }
+    .gate-error {
+      font-size: 0.78rem; color: #f87171;
+      margin-top: 0.6rem; min-height: 1rem;
     }
+
+    /* ── DROP OVERLAY ── */
+    .drop-overlay {
+      position: absolute; inset: 0;
+      z-index: 1000;
+      background: rgba(15,23,42,0.88);
+      backdrop-filter: blur(4px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .drop-overlay.active { opacity: 1; pointer-events: all; }
+    .drop-box {
+      border: 2px dashed var(--sun);
+      border-radius: 20px;
+      padding: 3rem 4rem;
+      text-align: center;
+    }
+    .drop-box .drop-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .drop-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .drop-box p { font-size: 0.88rem; color: var(--muted); }
+
+    /* Empty state (map) */
+    .empty-state {
+      position: absolute; inset: 0;
+      z-index: 50;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.25rem;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .empty-state.hidden { opacity: 0; }
+    .empty-hint {
+      background: rgba(15,23,42,0.75);
+      backdrop-filter: blur(8px);
+      border: 1.5px dashed rgba(245,158,11,0.4);
+      border-radius: 20px;
+      padding: 2.5rem 3.5rem;
+      text-align: center;
+    }
+    .empty-hint .e-icon { font-size: 2.8rem; margin-bottom: 0.75rem; }
+    .empty-hint h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .empty-hint p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    .empty-hint code { color: var(--sun); font-size: 0.8rem; }
+
+    /* Empty state (sidebar) */
+    .sidebar-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.5rem; padding: 2rem;
+      text-align: center; color: var(--muted);
+    }
+    .sidebar-empty .se-icon { font-size: 2rem; margin-bottom: 0.25rem; }
+    .sidebar-empty p { font-size: 0.82rem; line-height: 1.6; }
+
+    /* Toast */
+    .toast {
+      position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+      background: var(--dark-2); border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 10px; padding: 0.65rem 1.25rem;
+      font-size: 0.85rem; font-weight: 600;
+      z-index: 600; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      opacity: 0; transition: opacity 0.25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
 
     /* Leaflet popup override */
     .leaflet-popup-content-wrapper {
@@ -297,6 +471,20 @@
   </style>
 </head>
 <body>
+
+  <!-- PASSWORD GATE -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <div class="gate-logo">☀️</div>
+      <h2>SolarDashboard</h2>
+      <p>Accès restreint — entrez le mot de passe pour continuer.</p>
+      <input class="gate-input" id="gateInput" type="password"
+             placeholder="Mot de passe" autocomplete="off"
+             onkeydown="if(event.key==='Enter') checkPassword()" />
+      <button class="gate-btn" onclick="checkPassword()">Accéder →</button>
+      <div class="gate-error" id="gateError"></div>
+    </div>
+  </div>
 
   <!-- TOP BAR -->
   <div class="topbar">
@@ -338,32 +526,131 @@
     <div class="map-wrap">
       <div id="map"></div>
 
+      <!-- DROP OVERLAY -->
+      <div class="drop-overlay" id="dropOverlay">
+        <div class="drop-box">
+          <div class="drop-icon">🗂️</div>
+          <h3>Déposer un fichier GeoJSON</h3>
+          <p>Chaque feature doit être un Point avec les propriétés :<br/>
+          <code style="color:var(--sun);font-size:0.8rem">name, score, power, surface, status</code></p>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-hint">
+          <div class="e-icon">🗺️</div>
+          <h3>Aucune donnée chargée</h3>
+          <p>Glissez-déposez un fichier <strong>.geojson</strong> sur la carte<br/>
+          pour visualiser vos prospects.<br/><br/>
+          Propriétés attendues : <code>name, score, power, surface, status</code></p>
+        </div>
+      </div>
+
+      <!-- TOAST -->
+      <div class="toast" id="toast"></div>
+
       <!-- DETAIL PANEL -->
       <div class="detail-panel" id="detailPanel">
         <button class="detail-close" onclick="closeDetail()">✕</button>
-        <div class="detail-label">Fiche prospect</div>
-        <div class="detail-name" id="dp-name"></div>
-        <div class="detail-grid">
-          <div class="detail-field">
-            <div class="detail-field-label">Score</div>
-            <div class="detail-field-val" id="dp-score"></div>
-          </div>
-          <div class="detail-field">
-            <div class="detail-field-label">Puissance</div>
-            <div class="detail-field-val" id="dp-power"></div>
-          </div>
-          <div class="detail-field">
-            <div class="detail-field-label">Surface</div>
-            <div class="detail-field-val" id="dp-surface"></div>
-          </div>
-          <div class="detail-field">
-            <div class="detail-field-label">Statut</div>
-            <div class="detail-field-val" id="dp-status"></div>
+
+        <div class="detail-head">
+          <div class="detail-tag">☀️ Fiche prospect</div>
+          <div class="detail-name" id="dp-name"></div>
+          <div class="detail-address" id="dp-address"></div>
+          <div class="detail-badges">
+            <span class="badge-naf" id="dp-naf"></span>
+            <span class="badge-status s-new" id="dp-status-badge"></span>
           </div>
         </div>
-        <div class="detail-actions">
-          <button class="detail-btn primary">📞 Contacter</button>
-          <button class="detail-btn secondary">📋 Voir fiche</button>
+
+        <div class="detail-body">
+
+          <div class="detail-section">
+            <div class="detail-section-title">⚡ Potentiel solaire</div>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <div class="detail-field-label">Puissance</div>
+                <div class="detail-field-val" id="dp-power"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Production</div>
+                <div class="detail-field-val" id="dp-production"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Surface toit</div>
+                <div class="detail-field-val" id="dp-surface"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Conso. (kWh/m²)</div>
+                <div class="detail-field-val" id="dp-consumption"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Ratio autoprod.</div>
+                <div class="detail-field-val" id="dp-ratio"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Score</div>
+                <div class="detail-field-val" id="dp-score"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">🏗️ Toiture</div>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <div class="detail-field-label">Orientation</div>
+                <div class="detail-field-val" id="dp-orientation"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Type</div>
+                <div class="detail-field-val" id="dp-toit-type"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Ombrages</div>
+                <div class="detail-field-val" id="dp-shadings"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Matériau</div>
+                <div class="detail-field-val" id="dp-mat"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">👤 Contact</div>
+            <div class="detail-grid cols-1">
+              <div class="detail-field">
+                <div class="detail-field-label">Directeur</div>
+                <div class="detail-field-val" id="dp-director"></div>
+              </div>
+            </div>
+            <div class="detail-grid" style="margin-top:0.5rem">
+              <div class="detail-field">
+                <div class="detail-field-label">Téléphone</div>
+                <div class="detail-field-val" id="dp-phone"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Email</div>
+                <div class="detail-field-val" id="dp-email"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">Site web</div>
+                <div class="detail-field-val" id="dp-website"></div>
+              </div>
+              <div class="detail-field">
+                <div class="detail-field-label">LinkedIn</div>
+                <div class="detail-field-val" id="dp-linkedin"></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /detail-body -->
+
+        <div class="detail-footer">
+          <button class="detail-btn primary" id="dp-btn-phone">📞 Appeler</button>
+          <button class="detail-btn secondary" id="dp-btn-email">✉️ Email</button>
         </div>
       </div>
     </div>
@@ -371,21 +658,32 @@
   </div>
 
   <script>
+    // ── PASSWORD GATE ────────────────────────────────────────────────────────
+    const PASSWORD = "solardashboard2026";
+
+    (function() {
+      if (sessionStorage.getItem('sd_auth') === '1') {
+        document.getElementById('gate').classList.add('hidden');
+      }
+    })();
+
+    function checkPassword() {
+      const val = document.getElementById('gateInput').value;
+      const inp = document.getElementById('gateInput');
+      const err = document.getElementById('gateError');
+      if (val === PASSWORD) {
+        sessionStorage.setItem('sd_auth', '1');
+        document.getElementById('gate').classList.add('hidden');
+      } else {
+        err.textContent = 'Mot de passe incorrect.';
+        inp.classList.add('error');
+        inp.value = '';
+        setTimeout(() => inp.classList.remove('error'), 400);
+      }
+    }
+
     // ── DATA ─────────────────────────────────────────────────────────────────
-    const LEADS = [
-      { id:1,  name:"Mairie de Clermont",       lat:45.777,  lng:3.087,  score:92, power:"48 kWc", surface:"320 m²", status:"signed",  statusLabel:"Signé" },
-      { id:2,  name:"École Pasteur",             lat:45.783,  lng:3.079,  score:88, power:"36 kWc", surface:"240 m²", status:"contact", statusLabel:"En cours" },
-      { id:3,  name:"Hangar Agricole Moreau",    lat:45.762,  lng:3.102,  score:85, power:"120 kWc",surface:"800 m²", status:"new",     statusLabel:"Nouveau" },
-      { id:4,  name:"Entrepôt Logistique Sud",   lat:45.750,  lng:3.095,  score:79, power:"200 kWc",surface:"1400 m²",status:"contact", statusLabel:"En cours" },
-      { id:5,  name:"Centre commercial Jaude",  lat:45.789,  lng:3.083,  score:76, power:"90 kWc", surface:"600 m²", status:"new",     statusLabel:"Nouveau" },
-      { id:6,  name:"Gymnase Jules Ferry",       lat:45.775,  lng:3.110,  score:71, power:"24 kWc", surface:"160 m²", status:"lost",    statusLabel:"Perdu" },
-      { id:7,  name:"Bâtiment industriel Riom", lat:45.895,  lng:3.113,  score:68, power:"80 kWc", surface:"540 m²", status:"new",     statusLabel:"Nouveau" },
-      { id:8,  name:"Résidence Les Volcans",     lat:45.770,  lng:3.065,  score:63, power:"18 kWc", surface:"120 m²", status:"contact", statusLabel:"En cours" },
-      { id:9,  name:"Fromagerie Chaumont",       lat:45.591,  lng:3.117,  score:58, power:"30 kWc", surface:"200 m²", status:"new",     statusLabel:"Nouveau" },
-      { id:10, name:"EHPAD Fleurs des Champs",   lat:45.802,  lng:3.055,  score:55, power:"22 kWc", surface:"148 m²", status:"contact", statusLabel:"En cours" },
-      { id:11, name:"Coopérative Céréales Est",  lat:45.835,  lng:3.180,  score:91, power:"160 kWc",surface:"1100 m²",status:"signed",  statusLabel:"Signé" },
-      { id:12, name:"Piscine municipale Gerzat", lat:45.812,  lng:3.099,  score:83, power:"40 kWc", surface:"270 m²", status:"new",     statusLabel:"Nouveau" },
-    ];
+    let LEADS = [];
 
     // ── STATE ────────────────────────────────────────────────────────────────
     let currentFilter = 'all';
@@ -394,7 +692,7 @@
     const markerMap = {};
 
     // ── MAP INIT ─────────────────────────────────────────────────────────────
-    const map = L.map('map', { zoomControl: true }).setView([45.78, 3.09], 11);
+    const map = L.map('map', { zoomControl: true }).setView([46.6, 2.5], 6);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap contributors © CARTO',
@@ -417,7 +715,7 @@
       });
     }
 
-    const cluster = L.markerClusterGroup({
+    let cluster = L.markerClusterGroup({
       maxClusterRadius: 50,
       iconCreateFunction(c) {
         const n = c.getChildCount();
@@ -428,20 +726,138 @@
       }
     });
 
-    LEADS.forEach(lead => {
-      const m = L.marker([lead.lat, lead.lng], { icon: makeIcon(lead.score, false) });
-      m.bindPopup(`
-        <div class="popup-inner">
-          <strong>${lead.name}</strong>
-          <div class="pop-meta">${lead.power} · ${lead.surface}</div>
-          <div class="pop-score">⚡ Score ${lead.score}/100</div>
-        </div>
-      `, { offset: [0, -4] });
-      m.on('click', () => selectLead(lead.id));
-      markerMap[lead.id] = m;
-      cluster.addLayer(m);
-    });
+    function initMarkers(leads) {
+      // Clear existing
+      cluster.clearLayers();
+      Object.keys(markerMap).forEach(k => delete markerMap[k]);
+
+      leads.forEach(lead => {
+        const m = L.marker([lead.lat, lead.lng], { icon: makeIcon(lead.score, false) });
+        m.bindPopup(`
+          <div class="popup-inner">
+            <strong>${lead.name}</strong>
+            <div class="pop-meta">${lead.commune || ''}${lead.commune && lead.puissance_kwc ? ' · ' : ''}${lead.puissance_kwc ? lead.puissance_kwc.toLocaleString('fr') + ' kWc' : ''}</div>
+            <div class="pop-score">⚡ Score ${lead.score}/100</div>
+          </div>
+        `, { offset: [0, -4] });
+        m.on('click', () => selectLead(lead.id));
+        markerMap[lead.id] = m;
+        cluster.addLayer(m);
+      });
+    }
+
+    initMarkers(LEADS);
     map.addLayer(cluster);
+
+    // ── DRAG & DROP GEOJSON ───────────────────────────────────────────────────
+    const mapWrap = document.querySelector('.map-wrap');
+    const dropOverlay = document.getElementById('dropOverlay');
+    let dragCounter = 0;
+
+    mapWrap.addEventListener('dragenter', e => {
+      e.preventDefault();
+      dragCounter++;
+      dropOverlay.classList.add('active');
+    });
+    mapWrap.addEventListener('dragleave', () => {
+      dragCounter--;
+      if (dragCounter <= 0) { dragCounter = 0; dropOverlay.classList.remove('active'); }
+    });
+    mapWrap.addEventListener('dragover', e => e.preventDefault());
+    mapWrap.addEventListener('drop', e => {
+      e.preventDefault();
+      dragCounter = 0;
+      dropOverlay.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
+        showToast('❌ Format non supporté — utilisez un fichier .geojson');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const geojson = JSON.parse(ev.target.result);
+          loadGeoJSON(geojson, file.name);
+        } catch {
+          showToast('❌ JSON invalide');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function loadGeoJSON(geojson, filename) {
+      if (geojson.type !== 'FeatureCollection') {
+        showToast('❌ Le fichier doit être un FeatureCollection'); return;
+      }
+      const points = geojson.features.filter(f => f.geometry?.type === 'Point');
+      if (!points.length) { showToast('❌ Aucun Point trouvé dans le GeoJSON'); return; }
+
+      const STATUS_MAP = { new:'new', nouveau:'new', contact:'contact', 'en cours':'contact', signed:'signed', signé:'signed', perdu:'lost', lost:'lost' };
+
+      // Parse raw leads
+      const raw = points.map((f, i) => {
+        const p = f.properties || {};
+        const [lng, lat] = f.geometry.coordinates;
+        const rawStatus = (p.status || p.statut || 'new').toLowerCase();
+        const status = STATUS_MAP[rawStatus] || 'new';
+        const statusLabel = { new:'Nouveau', contact:'En cours', signed:'Signé', lost:'Perdu' }[status];
+        return {
+          id: i + 1,
+          name: p.nom || p.name || `Point ${i+1}`,
+          lat, lng,
+          // address
+          rue: p.rue || '', code_postal: p.code_postal || '', commune: p.nom_commune || p.commune || '',
+          // business
+          naf: p.naf || '',
+          // solar potential
+          puissance_kwc: parseFloat(p.puissance_kwc) || 0,
+          production_mwh: parseFloat(p.production_mwh) || 0,
+          area: parseFloat(p.area) || 0,
+          consumption: parseFloat(p.consumption) || 0,
+          ratio_autoproduction: parseFloat(p.ratio_autoproduction) || 0,
+          // roof
+          orientation: p.orientation || '—',
+          toit_plat: p.toit_plat === 'True' || p.toit_plat === true ? 'Plat' : (p.toit_plat ? 'Pentu' : '—'),
+          shadings: p.shadings || '—',
+          mat_toit_class: p.mat_toit_class || '—',
+          // contact
+          phone: p.phone || p.telephone || '',
+          email: p.email || '',
+          website: p.website || p.site || '',
+          linkedin: p.linkedin || '',
+          director_name: p.director_name || p.directeur || '',
+          // status
+          status, statusLabel,
+          // score computed later
+          score: 0
+        };
+      });
+
+      // Compute score from puissance_kwc (normalized 10–99)
+      const maxP = Math.max(...raw.map(l => l.puissance_kwc), 1);
+      LEADS = raw.map(l => ({
+        ...l,
+        score: Math.max(10, Math.min(99, Math.round((l.puissance_kwc / maxP) * 89) + 10))
+      }));
+
+      closeDetail();
+      initMarkers(LEADS);
+      const bounds = L.latLngBounds(LEADS.map(l => [l.lat, l.lng]));
+      map.fitBounds(bounds, { padding: [40, 40] });
+      renderList();
+      showToast(`✅ ${LEADS.length} prospects chargés depuis ${filename}`);
+    }
+
+    // ── TOAST ─────────────────────────────────────────────────────────────────
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
 
     // ── SIDEBAR ──────────────────────────────────────────────────────────────
     function scoreClass(s) { return s >= 80 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low'; }
@@ -459,14 +875,31 @@
 
     function renderList() {
       const fl = filteredLeads();
-      document.getElementById('countChip').textContent = `${fl.length} prospect${fl.length > 1 ? 's' : ''}`;
+      const chip = document.getElementById('countChip');
+      chip.textContent = LEADS.length === 0 ? 'Aucun prospect' : `${fl.length} prospect${fl.length > 1 ? 's' : ''}`;
+
+      // Toggle map empty state
+      const es = document.getElementById('emptyState');
+      if (LEADS.length === 0) { es.classList.remove('hidden'); } else { es.classList.add('hidden'); }
+
       const el = document.getElementById('leadList');
+      if (LEADS.length === 0) {
+        el.innerHTML = `<div class="sidebar-empty">
+          <div class="se-icon">📂</div>
+          <p>Déposez un fichier GeoJSON sur la carte pour charger vos prospects.</p>
+        </div>`;
+        return;
+      }
+      if (fl.length === 0) {
+        el.innerHTML = `<div class="sidebar-empty"><div class="se-icon">🔍</div><p>Aucun résultat pour ce filtre.</p></div>`;
+        return;
+      }
       el.innerHTML = fl.map(l => `
         <div class="lead-item ${selectedId === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
           <div class="lead-score ${scoreClass(l.score)}">${l.score}</div>
           <div class="lead-info">
             <div class="lead-name">${l.name}</div>
-            <div class="lead-meta">${l.power} · ${l.surface}</div>
+            <div class="lead-meta">${l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : '—'} · ${l.commune || '—'}</div>
           </div>
           <span class="lead-status ${statusClass(l.status)}">${l.statusLabel}</span>
         </div>
@@ -488,26 +921,52 @@
     // ── SELECT LEAD ──────────────────────────────────────────────────────────
     function selectLead(id) {
       selectedId = id;
-      const lead = LEADS.find(l => l.id === id);
-      if (!lead) return;
+      const l = LEADS.find(l => l.id === id);
+      if (!l) return;
 
       // Update markers
       Object.entries(markerMap).forEach(([lid, m]) => {
-        m.setIcon(makeIcon(LEADS.find(l => l.id == lid).score, lid == id));
+        m.setIcon(makeIcon(LEADS.find(x => x.id == lid).score, lid == id));
       });
 
       // Pan map
-      map.setView([lead.lat, lead.lng], Math.max(map.getZoom(), 13), { animate: true });
+      map.setView([l.lat, l.lng], Math.max(map.getZoom(), 13), { animate: true });
 
-      // Detail panel
-      document.getElementById('dp-name').textContent    = lead.name;
-      document.getElementById('dp-score').textContent   = `${lead.score}/100`;
-      document.getElementById('dp-power').textContent   = lead.power;
-      document.getElementById('dp-surface').textContent = lead.surface;
-      document.getElementById('dp-status').textContent  = lead.statusLabel;
+      // Header
+      document.getElementById('dp-name').textContent    = l.name;
+      document.getElementById('dp-address').textContent = [l.rue, l.code_postal, l.commune].filter(Boolean).join(', ') || '—';
+      const nafEl = document.getElementById('dp-naf');
+      nafEl.textContent = l.naf ? `NAF ${l.naf}` : ''; nafEl.style.display = l.naf ? '' : 'none';
+      const statusBadge = document.getElementById('dp-status-badge');
+      statusBadge.textContent  = l.statusLabel;
+      statusBadge.className    = `badge-status ${statusClass(l.status)}`;
+
+      // Potentiel
+      document.getElementById('dp-power').textContent       = l.puissance_kwc ? `${l.puissance_kwc.toLocaleString('fr')} kWc` : '—';
+      document.getElementById('dp-production').textContent  = l.production_mwh ? `${l.production_mwh.toLocaleString('fr')} MWh` : '—';
+      document.getElementById('dp-surface').textContent     = l.area ? `${Math.round(l.area).toLocaleString('fr')} m²` : '—';
+      document.getElementById('dp-consumption').textContent = l.consumption ? l.consumption.toFixed(1) : '—';
+      document.getElementById('dp-ratio').textContent       = l.ratio_autoproduction ? `×${l.ratio_autoproduction.toFixed(2)}` : '—';
+      document.getElementById('dp-score').textContent       = `${l.score}/100`;
+
+      // Toiture
+      document.getElementById('dp-orientation').textContent = l.orientation;
+      document.getElementById('dp-toit-type').textContent   = l.toit_plat;
+      document.getElementById('dp-shadings').textContent    = l.shadings;
+      document.getElementById('dp-mat').textContent         = l.mat_toit_class;
+
+      // Contact
+      document.getElementById('dp-director').textContent = l.director_name || '—';
+      document.getElementById('dp-phone').innerHTML   = l.phone   ? `<a href="tel:${l.phone}">${l.phone}</a>`     : '—';
+      document.getElementById('dp-email').innerHTML   = l.email   ? `<a href="mailto:${l.email}">${l.email}</a>` : '—';
+      document.getElementById('dp-website').innerHTML = l.website ? `<a href="https://${l.website.replace(/^https?:\/\//,'')}" target="_blank">${l.website}</a>` : '—';
+      document.getElementById('dp-linkedin').innerHTML = l.linkedin ? `<a href="${l.linkedin}" target="_blank">Voir profil</a>` : '—';
+
+      // Action buttons
+      document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
+      document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
+
       document.getElementById('detailPanel').classList.add('visible');
-
-      // Re-render list
       renderList();
     }
 
