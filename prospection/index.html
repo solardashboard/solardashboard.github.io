@@ -16,576 +16,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --sun: #f59e0b;
-      --sun-dark: #d97706;
-      --dark: #0f172a;
-      --dark-2: #1e293b;
-      --dark-3: #334155;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --sidebar: 340px;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--dark);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* ── TOP BAR ── */
-    .topbar {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 0.75rem 1.25rem;
-      background: var(--dark-2);
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      flex-shrink: 0;
-      z-index: 200;
-    }
-    .back-btn {
-      color: var(--muted); text-decoration: none;
-      font-size: 0.85rem; font-weight: 600;
-      display: flex; align-items: center; gap: 0.3rem;
-      transition: color 0.15s;
-      white-space: nowrap;
-    }
-    .back-btn:hover { color: var(--text); }
-    .topbar-logo {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-weight: 800; font-size: 1rem; letter-spacing: -0.02em;
-    }
-    .logo-icon {
-      width: 28px; height: 28px;
-      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-    }
-    .topbar-sep { color: var(--dark-3); }
-    .topbar-title { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
-
-    .topbar-right {
-      margin-left: auto;
-      display: flex; align-items: center; gap: 0.75rem;
-    }
-    .stat-chip {
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.2);
-      color: var(--sun);
-      font-size: 0.78rem; font-weight: 700;
-      padding: 0.3rem 0.75rem;
-      border-radius: 999px;
-    }
-    .btn-export {
-      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
-      color: var(--dark);
-      font-weight: 700; font-size: 0.8rem;
-      padding: 0.4rem 1rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .btn-export:hover { opacity: 0.88; }
-
-    /* ── MAIN LAYOUT ── */
-    .main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      width: var(--sidebar);
-      min-width: var(--sidebar);
-      background: var(--dark-2);
-      border-right: 1px solid rgba(255,255,255,0.07);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .sidebar-head {
-      padding: 1rem 1.25rem 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .sidebar-head h2 {
-      font-size: 0.85rem; font-weight: 700;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 0.75rem;
-    }
-
-    .search-box {
-      display: flex; align-items: center;
-      background: var(--dark-3);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 9px;
-      padding: 0 0.75rem;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-    .search-box span { font-size: 0.9rem; color: var(--muted); }
-    .search-box input {
-      flex: 1;
-      background: transparent;
-      border: none; outline: none;
-      color: var(--text);
-      font-size: 0.88rem;
-      padding: 0.55rem 0;
-      font-family: inherit;
-    }
-    .search-box input::placeholder { color: var(--muted); }
-
-    .filter-row {
-      display: flex; gap: 0.5rem;
-    }
-    .filter-btn {
-      flex: 1;
-      background: var(--dark-3);
-      border: 1px solid rgba(255,255,255,0.07);
-      color: var(--muted);
-      font-size: 0.78rem; font-weight: 600;
-      padding: 0.4rem 0;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-family: inherit;
-    }
-    .filter-btn.active, .filter-btn:hover {
-      background: rgba(245,158,11,0.12);
-      border-color: rgba(245,158,11,0.35);
-      color: var(--sun);
-    }
-
-    /* Sidebar drag target */
-    .sidebar.drop-target {
-      border-right-color: rgba(245,158,11,0.6);
-      background: rgba(245,158,11,0.04);
-      transition: background 0.15s, border-right-color 0.15s;
-    }
-    .sidebar.drop-target .sidebar-empty {
-      color: var(--sun);
-    }
-    .sidebar.drop-target .se-icon::after {
-      content: ' 📂';
-    }
-
-    /* Lead list */
-    .lead-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.5rem 0;
-    }
-    .lead-list::-webkit-scrollbar { width: 4px; }
-    .lead-list::-webkit-scrollbar-track { background: transparent; }
-    .lead-list::-webkit-scrollbar-thumb { background: var(--dark-3); border-radius: 4px; }
-
-    .lead-item {
-      display: flex; align-items: flex-start; gap: 0.85rem;
-      padding: 0.85rem 1.25rem;
-      cursor: pointer;
-      transition: background 0.15s;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .lead-item:hover { background: rgba(255,255,255,0.04); }
-    .lead-item.selected { background: rgba(245,158,11,0.08); border-left: 3px solid var(--sun); padding-left: calc(1.25rem - 3px); }
-
-    .lead-score {
-      width: 38px; height: 38px; min-width: 38px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.88rem;
-    }
-    .score-high { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .score-mid  { background: rgba(245,158,11,0.15); color: var(--sun); }
-    .score-low  { background: rgba(148,163,184,0.1); color: var(--muted); }
-
-    .lead-info { flex: 1; min-width: 0; }
-    .lead-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lead-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
-    .lead-status {
-      font-size: 0.7rem; font-weight: 700;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
-    .s-new      { background: rgba(56,189,248,0.15); color: #38bdf8; }
-    .s-contact  { background: rgba(245,158,11,0.15); color: var(--sun); }
-    .s-signed   { background: rgba(34,197,94,0.15);  color: #4ade80; }
-    .s-lost     { background: rgba(239,68,68,0.15);  color: #f87171; }
-
-    /* ── MAP ── */
-    .map-wrap {
-      flex: 1;
-      position: relative;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-      background: var(--dark);
-    }
-
-    /* Detail panel */
-    .detail-panel {
-      position: absolute;
-      top: 1rem; bottom: 1rem; right: 1rem;
-      width: 340px;
-      background: var(--dark-2);
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: 16px;
-      z-index: 500;
-      display: none;
-      flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      overflow: hidden;
-    }
-    .detail-panel.visible { display: flex; }
-    .detail-head {
-      padding: 1rem 1.1rem 0.85rem;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      flex-shrink: 0;
-    }
-    .detail-close {
-      position: absolute; top: 0.75rem; right: 0.75rem;
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 1.1rem; padding: 0.25rem;
-    }
-    .detail-close:hover { color: var(--text); }
-    .detail-tag {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--sun);
-      margin-bottom: 0.4rem;
-    }
-    .detail-name {
-      font-size: 0.95rem; font-weight: 700; line-height: 1.35;
-      margin-bottom: 0.35rem; padding-right: 1.5rem;
-    }
-    .detail-address {
-      font-size: 0.78rem; color: var(--muted);
-    }
-    .detail-badges {
-      display: flex; gap: 0.4rem; flex-wrap: wrap;
-      margin-top: 0.6rem;
-    }
-    .badge-naf {
-      background: rgba(56,189,248,0.12); color: #38bdf8;
-      font-size: 0.68rem; font-weight: 700;
-      padding: 0.2rem 0.5rem; border-radius: 5px;
-    }
-    .badge-status {
-      font-size: 0.68rem; font-weight: 700;
-      padding: 0.2rem 0.5rem; border-radius: 5px;
-    }
-
-    /* Scrollable body */
-    .detail-body {
-      flex: 1; overflow-y: auto; padding: 0.85rem 1.1rem;
-    }
-    .detail-body::-webkit-scrollbar { width: 3px; }
-    .detail-body::-webkit-scrollbar-thumb { background: var(--dark-3); border-radius: 3px; }
-
-    .detail-section { margin-bottom: 1rem; }
-    .detail-section-title {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-    .detail-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
-    .detail-grid.cols-1 { grid-template-columns: 1fr; }
-    .detail-field { background: var(--dark-3); border-radius: 8px; padding: 0.55rem 0.7rem; }
-    .detail-field-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.15rem; }
-    .detail-field-val { font-size: 0.85rem; font-weight: 700; word-break: break-word; }
-    .detail-field-val a {
-      color: #38bdf8; text-decoration: none; font-weight: 600; font-size: 0.8rem;
-    }
-    .detail-field-val a:hover { text-decoration: underline; }
-
-    .detail-footer {
-      padding: 0.75rem 1.1rem;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex; gap: 0.5rem;
-      flex-shrink: 0;
-    }
-    .detail-btn {
-      flex: 1; font-size: 0.8rem; font-weight: 700;
-      padding: 0.5rem; border-radius: 8px; border: none;
-      cursor: pointer; transition: opacity 0.15s; font-family: inherit;
-    }
-    .detail-btn:hover { opacity: 0.85; }
-    .detail-btn.primary { background: linear-gradient(135deg, var(--sun), var(--sun-dark)); color: var(--dark); }
-    .detail-btn.secondary { background: rgba(255,255,255,0.07); color: var(--text); }
-    .detail-btn.save-btn { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); }
-    .detail-btn.save-btn.saved { background: rgba(245,158,11,0.15); color: var(--sun); border-color: rgba(245,158,11,0.3); }
-
-    /* IGN Thumbnail */
-    .detail-thumb-wrap {
-      position: relative; cursor: zoom-in;
-      margin-bottom: 0.5rem; border-radius: 10px; overflow: hidden;
-    }
-    .detail-thumb {
-      width: 100%; aspect-ratio: 1;
-      object-fit: cover;
-      background: var(--dark-3);
-      display: block;
-      transition: opacity 0.15s;
-    }
-    .detail-thumb-wrap:hover .detail-thumb { opacity: 0.85; }
-    .detail-thumb-zoom {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.15s;
-      font-size: 1.5rem;
-      background: rgba(15,23,42,0.3);
-    }
-    .detail-thumb-wrap:hover .detail-thumb-zoom { opacity: 1; }
-
-    .thumb-links {
-      display: flex; gap: 0.5rem; margin-bottom: 0.85rem;
-    }
-    .thumb-link {
-      flex: 1; text-align: center;
-      background: var(--dark-3);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 8px;
-      padding: 0.4rem 0.5rem;
-      font-size: 0.75rem; font-weight: 600;
-      color: var(--muted); text-decoration: none;
-      transition: all 0.15s;
-    }
-    .thumb-link:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
-
-    /* ── LIGHTBOX ── */
-    .lightbox {
-      position: fixed; inset: 0; z-index: 9000;
-      background: rgba(10,15,28,0.92);
-      backdrop-filter: blur(6px);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    .lightbox.open { opacity: 1; pointer-events: all; }
-    .lightbox-img-wrap {
-      position: relative;
-      border-radius: 16px; overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
-      max-width: min(600px, 90vw);
-      width: 100%;
-    }
-    .lightbox-img {
-      width: 100%; aspect-ratio: 1;
-      object-fit: cover; display: block;
-      background: var(--dark-3);
-    }
-    .lightbox-close {
-      position: absolute; top: 0.75rem; right: 0.75rem;
-      background: rgba(15,23,42,0.8); border: none;
-      color: var(--text); font-size: 1.1rem;
-      width: 32px; height: 32px; border-radius: 50%;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s;
-    }
-    .lightbox-close:hover { background: rgba(15,23,42,1); }
-    .lightbox-bar {
-      max-width: min(600px, 90vw); width: 100%;
-      background: var(--dark-2);
-      border: 1px solid rgba(245,158,11,0.2);
-      border-top: none;
-      border-radius: 0 0 16px 16px;
-      padding: 0.9rem 1.1rem;
-      display: flex; align-items: center; gap: 0.75rem;
-    }
-    .lb-info { flex: 1; min-width: 0; }
-    .lb-name {
-      font-size: 0.92rem; font-weight: 700;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin-bottom: 0.2rem;
-    }
-    .lb-meta { font-size: 0.78rem; color: var(--muted); }
-    .lb-score {
-      background: rgba(245,158,11,0.15);
-      color: var(--sun); font-size: 0.78rem; font-weight: 800;
-      padding: 0.3rem 0.65rem; border-radius: 8px;
-      white-space: nowrap;
-    }
-    .lb-save {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--muted); font-size: 0.8rem; font-weight: 700;
-      padding: 0.4rem 0.9rem; border-radius: 8px;
-      cursor: pointer; font-family: inherit;
-      transition: all 0.15s; white-space: nowrap;
-    }
-    .lb-save:hover { color: var(--text); }
-    .lb-save.saved { background: rgba(245,158,11,0.15); color: var(--sun); border-color: rgba(245,158,11,0.3); }
-
-    /* ── PASSWORD GATE ── */
-    .gate {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--dark);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .gate.hidden { display: none; }
-    .gate-card {
-      background: var(--dark-2);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 2.5rem 2.5rem 2rem;
-      width: 340px;
-      text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-    }
-    .gate-logo {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      margin: 0 auto 1.25rem;
-    }
-    .gate-card h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.35rem; }
-    .gate-card p  { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
-    .gate-input {
-      width: 100%;
-      background: var(--dark-3);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 0.95rem; font-family: inherit;
-      padding: 0.7rem 1rem;
-      outline: none;
-      text-align: center;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.75rem;
-      transition: border-color 0.15s;
-    }
-    .gate-input:focus { border-color: rgba(245,158,11,0.5); }
-    .gate-input.error { border-color: #f87171; animation: shake 0.3s ease; }
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-6px); }
-      75%      { transform: translateX(6px); }
-    }
-    .gate-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
-      color: var(--dark);
-      font-weight: 700; font-size: 0.95rem; font-family: inherit;
-      border: none; border-radius: 10px;
-      padding: 0.75rem;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .gate-btn:hover { opacity: 0.88; }
-    .gate-error {
-      font-size: 0.78rem; color: #f87171;
-      margin-top: 0.6rem; min-height: 1rem;
-    }
-
-    /* ── DROP OVERLAY ── */
-    .drop-overlay {
-      position: absolute; inset: 0;
-      z-index: 1000;
-      background: rgba(15,23,42,0.88);
-      backdrop-filter: blur(4px);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 1rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .drop-overlay.active { opacity: 1; pointer-events: all; }
-    .drop-box {
-      border: 2px dashed var(--sun);
-      border-radius: 20px;
-      padding: 3rem 4rem;
-      text-align: center;
-    }
-    .drop-box .drop-icon { font-size: 3rem; margin-bottom: 0.75rem; }
-    .drop-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
-    .drop-box p { font-size: 0.88rem; color: var(--muted); }
-
-    /* Empty state (map) */
-    .empty-state {
-      position: absolute; inset: 0;
-      z-index: 50;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 1.25rem;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .empty-state.hidden { opacity: 0; }
-    .empty-hint {
-      background: rgba(15,23,42,0.75);
-      backdrop-filter: blur(8px);
-      border: 1.5px dashed rgba(245,158,11,0.4);
-      border-radius: 20px;
-      padding: 2.5rem 3.5rem;
-      text-align: center;
-    }
-    .empty-hint .e-icon { font-size: 2.8rem; margin-bottom: 0.75rem; }
-    .empty-hint h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
-    .empty-hint p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-    .empty-hint code { color: var(--sun); font-size: 0.8rem; }
-
-    /* Empty state (sidebar) */
-    .sidebar-empty {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 0.5rem; padding: 2rem;
-      text-align: center; color: var(--muted);
-    }
-    .sidebar-empty .se-icon { font-size: 2rem; margin-bottom: 0.25rem; }
-    .sidebar-empty p { font-size: 0.82rem; line-height: 1.6; }
-
-    /* Toast */
-    .toast {
-      position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
-      background: var(--dark-2); border: 1px solid rgba(245,158,11,0.3);
-      border-radius: 10px; padding: 0.65rem 1.25rem;
-      font-size: 0.85rem; font-weight: 600;
-      z-index: 600; white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      opacity: 0; transition: opacity 0.25s;
-      pointer-events: none;
-    }
-    .toast.show { opacity: 1; }
-
-    /* Leaflet popup override */
-    .leaflet-popup-content-wrapper {
-      background: var(--dark-2);
-      color: var(--text);
-      border: 1px solid rgba(245,158,11,0.2);
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-      padding: 0;
-    }
-    .leaflet-popup-content { margin: 0; }
-    .leaflet-popup-tip { background: var(--dark-2); }
-    .popup-inner { padding: 0.9rem 1.1rem; }
-    .popup-inner strong { font-size: 0.95rem; display: block; margin-bottom: 0.35rem; }
-    .popup-inner .pop-meta { font-size: 0.8rem; color: var(--muted); }
-    .popup-inner .pop-score {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      margin-top: 0.5rem;
-      font-size: 0.8rem; font-weight: 700; color: #4ade80;
-    }
-  </style>
+  <link rel="stylesheet" href="app.css" />
 </head>
 <body>
 
@@ -614,7 +45,7 @@
     <div class="topbar-sep">/</div>
     <span class="topbar-title">Prospection</span>
     <div class="topbar-right">
-      <span class="stat-chip" id="countChip">— prospects</span>
+      <span class="stat-chip" id="countChip">Aucun prospect</span>
       <button class="btn-export" onclick="exportCSV()">📤 Exporter CSV</button>
     </div>
   </div>
@@ -641,28 +72,27 @@
     <div class="map-wrap">
       <div id="map"></div>
 
-      <!-- DROP OVERLAY -->
+      <!-- Drop overlay (shown when dragging a file over the page) -->
       <div class="drop-overlay" id="dropOverlay">
         <div class="drop-box">
           <div class="drop-icon">🗂️</div>
           <h3>Déposer un fichier GeoJSON</h3>
-          <p>Chaque feature doit être un Point avec les propriétés :<br/>
-          <code style="color:var(--sun);font-size:0.8rem">name, score, power, surface, status</code></p>
+          <p>Propriétés attendues :<br/>
+          <code style="color:var(--sun);font-size:0.8rem">nom, puissance_kwc, production_mwh, area…</code></p>
         </div>
       </div>
 
-      <!-- EMPTY STATE -->
+      <!-- Empty state (no data loaded yet) -->
       <div class="empty-state" id="emptyState">
         <div class="empty-hint">
           <div class="e-icon">🗺️</div>
           <h3>Aucune donnée chargée</h3>
-          <p>Glissez-déposez un fichier <strong>.geojson</strong> sur la carte<br/>
-          pour visualiser vos prospects.<br/><br/>
-          Propriétés attendues : <code>name, score, power, surface, status</code></p>
+          <p>Glissez-déposez un fichier <strong>.geojson</strong> n'importe où sur la page.<br/><br/>
+          Propriétés attendues : <code>nom, puissance_kwc, production_mwh, area, consumption,<br/>
+          ratio_autoproduction, orientation, toit_plat, shadings, phone, email…</code></p>
         </div>
       </div>
 
-      <!-- TOAST -->
       <div class="toast" id="toast"></div>
 
       <!-- DETAIL PANEL -->
@@ -681,9 +111,8 @@
 
         <div class="detail-body">
 
-          <!-- Vue aérienne IGN -->
           <div class="detail-thumb-wrap" onclick="openLightbox()">
-            <img class="detail-thumb" id="dp-thumb" src="" alt="Vue aérienne" />
+            <img class="detail-thumb" id="dp-thumb" src="" alt="Vue aérienne IGN" />
             <div class="detail-thumb-zoom">🔍</div>
           </div>
           <div class="thumb-links">
@@ -694,94 +123,49 @@
           <div class="detail-section">
             <div class="detail-section-title">⚡ Potentiel solaire</div>
             <div class="detail-grid">
-              <div class="detail-field">
-                <div class="detail-field-label">Puissance</div>
-                <div class="detail-field-val" id="dp-power"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Production</div>
-                <div class="detail-field-val" id="dp-production"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Surface toit</div>
-                <div class="detail-field-val" id="dp-surface"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Conso. (MWh)</div>
-                <div class="detail-field-val" id="dp-consumption"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Ratio autoprod.</div>
-                <div class="detail-field-val" id="dp-ratio"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Score</div>
-                <div class="detail-field-val" id="dp-score"></div>
-              </div>
+              <div class="detail-field"><div class="detail-field-label">Puissance</div><div class="detail-field-val" id="dp-power"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Production</div><div class="detail-field-val" id="dp-production"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Surface toit</div><div class="detail-field-val" id="dp-surface"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Conso. (MWh)</div><div class="detail-field-val" id="dp-consumption"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Ratio autoprod.</div><div class="detail-field-val" id="dp-ratio"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Score</div><div class="detail-field-val" id="dp-score"></div></div>
             </div>
           </div>
 
           <div class="detail-section">
             <div class="detail-section-title">🏗️ Toiture</div>
             <div class="detail-grid">
-              <div class="detail-field">
-                <div class="detail-field-label">Orientation</div>
-                <div class="detail-field-val" id="dp-orientation"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Type</div>
-                <div class="detail-field-val" id="dp-toit-type"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Ombrages</div>
-                <div class="detail-field-val" id="dp-shadings"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Matériau</div>
-                <div class="detail-field-val" id="dp-mat"></div>
-              </div>
+              <div class="detail-field"><div class="detail-field-label">Orientation</div><div class="detail-field-val" id="dp-orientation"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Type</div><div class="detail-field-val" id="dp-toit-type"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Ombrages</div><div class="detail-field-val" id="dp-shadings"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Matériau</div><div class="detail-field-val" id="dp-mat"></div></div>
             </div>
           </div>
 
           <div class="detail-section">
             <div class="detail-section-title">👤 Contact</div>
             <div class="detail-grid cols-1">
-              <div class="detail-field">
-                <div class="detail-field-label">Directeur</div>
-                <div class="detail-field-val" id="dp-director"></div>
-              </div>
+              <div class="detail-field"><div class="detail-field-label">Directeur</div><div class="detail-field-val" id="dp-director"></div></div>
             </div>
             <div class="detail-grid" style="margin-top:0.5rem">
-              <div class="detail-field">
-                <div class="detail-field-label">Téléphone</div>
-                <div class="detail-field-val" id="dp-phone"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Email</div>
-                <div class="detail-field-val" id="dp-email"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">Site web</div>
-                <div class="detail-field-val" id="dp-website"></div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-field-label">LinkedIn</div>
-                <div class="detail-field-val" id="dp-linkedin"></div>
-              </div>
+              <div class="detail-field"><div class="detail-field-label">Téléphone</div><div class="detail-field-val" id="dp-phone"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Email</div><div class="detail-field-val" id="dp-email"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Site web</div><div class="detail-field-val" id="dp-website"></div></div>
+              <div class="detail-field"><div class="detail-field-label">LinkedIn</div><div class="detail-field-val" id="dp-linkedin"></div></div>
             </div>
           </div>
 
         </div><!-- /detail-body -->
 
         <div class="detail-footer">
-          <button class="detail-btn primary" id="dp-btn-phone">📞 Appeler</button>
+          <button class="detail-btn primary"   id="dp-btn-phone">📞 Appeler</button>
           <button class="detail-btn secondary" id="dp-btn-email">✉️ Email</button>
-          <button class="detail-btn save-btn" id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
+          <button class="detail-btn save-btn"  id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
         </div>
-      </div>
-    </div>
+      </div><!-- /detail-panel -->
 
-  </div>
+    </div><!-- /map-wrap -->
+  </div><!-- /main -->
 
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
@@ -799,435 +183,16 @@
     </div>
   </div>
 
-  <script>
-    // ── PASSWORD GATE ────────────────────────────────────────────────────────
-    const PASSWORD = "solardashboard2026";
+  <!-- JS — load order matters: config → state → map → ui → detail → lightbox → data → export → main -->
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/detail.js"></script>
+  <script src="js/lightbox.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/main.js"></script>
 
-    (function() {
-      if (sessionStorage.getItem('sd_auth') === '1') {
-        document.getElementById('gate').classList.add('hidden');
-      }
-    })();
-
-    function checkPassword() {
-      const val = document.getElementById('gateInput').value;
-      const inp = document.getElementById('gateInput');
-      const err = document.getElementById('gateError');
-      if (val === PASSWORD) {
-        sessionStorage.setItem('sd_auth', '1');
-        document.getElementById('gate').classList.add('hidden');
-      } else {
-        err.textContent = 'Mot de passe incorrect.';
-        inp.classList.add('error');
-        inp.value = '';
-        setTimeout(() => inp.classList.remove('error'), 400);
-      }
-    }
-
-    // ── DATA ─────────────────────────────────────────────────────────────────
-    let LEADS = [];
-
-    // ── STATE ────────────────────────────────────────────────────────────────
-    let currentFilter = 'all';
-    let currentSearch = '';
-    let selectedId = null;
-    const markerMap = {};
-    const savedIds = new Set();
-
-    // ── MAP INIT ─────────────────────────────────────────────────────────────
-    const map = L.map('map', { zoomControl: true }).setView([46.6, 2.5], 6);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
-      maxZoom: 19
-    }).addTo(map);
-
-    // Custom icon factory
-    function makeIcon(score, selected) {
-      const color = score > 50 ? '#16a34a' : score >= 20 ? '#d97706' : '#64748b';
-      const size = selected ? 38 : 30;
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 30 30">
-        <circle cx="15" cy="15" r="13" fill="${color}" fill-opacity="${selected ? 1 : 0.9}" stroke="${selected ? '#1e293b' : '#fff'}" stroke-width="${selected ? 2.5 : 1.5}"/>
-        <text x="15" y="19.5" text-anchor="middle" font-size="11" font-family="Inter,sans-serif" font-weight="800" fill="#fff">${score}</text>
-      </svg>`;
-      return L.divIcon({
-        html: svg,
-        className: '',
-        iconSize: [size, size],
-        iconAnchor: [size/2, size/2],
-      });
-    }
-
-    let cluster = L.markerClusterGroup({
-      maxClusterRadius: 50,
-      iconCreateFunction(c) {
-        const n = c.getChildCount();
-        return L.divIcon({
-          html: `<div style="width:42px;height:42px;border-radius:50%;background:rgba(245,158,11,0.85);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;color:#0f172a;border:2px solid rgba(255,255,255,0.3)">${n}</div>`,
-          className: '', iconSize: [42,42], iconAnchor: [21,21]
-        });
-      }
-    });
-
-    function initMarkers(leads) {
-      // Clear existing
-      cluster.clearLayers();
-      Object.keys(markerMap).forEach(k => delete markerMap[k]);
-
-      leads.forEach(lead => {
-        const m = L.marker([lead.lat, lead.lng], { icon: makeIcon(lead.score, false) });
-        m.bindPopup(`
-          <div class="popup-inner">
-            <strong>${lead.name}</strong>
-            <div class="pop-meta">${lead.commune || ''}${lead.commune && lead.puissance_kwc ? ' · ' : ''}${lead.puissance_kwc ? lead.puissance_kwc.toLocaleString('fr') + ' kWc' : ''}</div>
-            <div class="pop-score">⚡ Score ${lead.score}/100</div>
-          </div>
-        `, { offset: [0, -4] });
-        m.on('click', () => selectLead(lead.id));
-        markerMap[lead.id] = m;
-        cluster.addLayer(m);
-      });
-    }
-
-    initMarkers(LEADS);
-    map.addLayer(cluster);
-
-    // ── DRAG & DROP GEOJSON (toute la page) ──────────────────────────────────
-    const mapWrap = document.querySelector('.map-wrap');
-    const dropOverlay = document.getElementById('dropOverlay');
-    const sidebar = document.querySelector('.sidebar');
-    let dragCounter = 0;
-
-    function showDropZone() {
-      dropOverlay.classList.add('active');
-      sidebar.classList.add('drop-target');
-    }
-    function hideDropZone() {
-      dropOverlay.classList.remove('active');
-      sidebar.classList.remove('drop-target');
-    }
-
-    document.addEventListener('dragenter', e => {
-      e.preventDefault();
-      dragCounter++;
-      showDropZone();
-    });
-    document.addEventListener('dragleave', e => {
-      // Ignorer les événements qui restent dans la page
-      if (e.relatedTarget && document.contains(e.relatedTarget)) return;
-      dragCounter = 0;
-      hideDropZone();
-    });
-    document.addEventListener('dragover', e => e.preventDefault());
-    document.addEventListener('drop', e => {
-      e.preventDefault();
-      dragCounter = 0;
-      hideDropZone();
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      if (!file.name.endsWith('.geojson') && !file.name.endsWith('.json')) {
-        showToast('❌ Format non supporté — utilisez un fichier .geojson');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = ev => {
-        try {
-          const geojson = JSON.parse(ev.target.result);
-          loadGeoJSON(geojson, file.name);
-        } catch {
-          showToast('❌ JSON invalide');
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    function loadGeoJSON(geojson, filename) {
-      if (geojson.type !== 'FeatureCollection') {
-        showToast('❌ Le fichier doit être un FeatureCollection'); return;
-      }
-      const points = geojson.features.filter(f => f.geometry?.type === 'Point');
-      if (!points.length) { showToast('❌ Aucun Point trouvé dans le GeoJSON'); return; }
-
-      const STATUS_MAP = { new:'new', nouveau:'new', contact:'contact', 'en cours':'contact', signed:'signed', signé:'signed', perdu:'lost', lost:'lost' };
-
-      // Parse raw leads
-      const raw = points.map((f, i) => {
-        const p = f.properties || {};
-        const [lng, lat] = f.geometry.coordinates;
-        const rawStatus = (p.status || p.statut || 'new').toLowerCase();
-        const status = STATUS_MAP[rawStatus] || 'new';
-        const statusLabel = { new:'Nouveau', contact:'En cours', signed:'Signé', lost:'Perdu' }[status];
-        return {
-          id: i + 1,
-          name: p.nom || p.name || `Point ${i+1}`,
-          lat, lng,
-          // address
-          rue: p.rue || '', code_postal: p.code_postal || '', commune: p.nom_commune || p.commune || '',
-          // business
-          naf: p.naf || '',
-          // solar potential
-          puissance_kwc: parseFloat(p.puissance_kwc) || 0,
-          production_mwh: parseFloat(p.production_mwh) || 0,
-          area: parseFloat(p.area) || 0,
-          consumption: parseFloat(p.consumption) || 0,
-          ratio_autoproduction: parseFloat(p.ratio_autoproduction) || 0,
-          // roof
-          orientation: p.orientation || '—',
-          toit_plat: p.toit_plat === 'True' || p.toit_plat === true ? 'Plat' : (p.toit_plat ? 'Pentu' : '—'),
-          shadings: p.shadings || '—',
-          mat_toit_class: p.mat_toit_class || '—',
-          // contact
-          phone: p.phone || p.telephone || '',
-          email: p.email || '',
-          website: p.website || p.site || '',
-          linkedin: p.linkedin || '',
-          director_name: p.director_name || p.directeur || '',
-          // status
-          status, statusLabel,
-          // score computed later
-          score: 0
-        };
-      });
-
-      // Compute score from puissance_kwc (normalized 10–99)
-      const maxP = Math.max(...raw.map(l => l.puissance_kwc), 1);
-      LEADS = raw.map(l => ({
-        ...l,
-        score: Math.max(10, Math.min(99, Math.round((l.puissance_kwc / maxP) * 89) + 10))
-      })).sort((a, b) => b.score - a.score);
-
-      closeDetail();
-      initMarkers(LEADS);
-      const bounds = L.latLngBounds(LEADS.map(l => [l.lat, l.lng]));
-      map.fitBounds(bounds, { padding: [40, 40] });
-      renderList();
-      showToast(`✅ ${LEADS.length} prospects chargés depuis ${filename}`);
-    }
-
-    // ── TOAST ─────────────────────────────────────────────────────────────────
-    let toastTimer;
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
-    }
-
-    // ── SIDEBAR ──────────────────────────────────────────────────────────────
-    function scoreClass(s) { return s > 50 ? 'score-high' : s >= 20 ? 'score-mid' : 'score-low'; }
-    function statusClass(s) {
-      return { new: 's-new', contact: 's-contact', signed: 's-signed', lost: 's-lost' }[s] || 's-new';
-    }
-
-    function filteredLeads() {
-      return LEADS.filter(l => {
-        const matchFilter = currentFilter === 'all' || (currentFilter === 'saved' && savedIds.has(l.id));
-        const matchSearch = l.name.toLowerCase().includes(currentSearch.toLowerCase());
-        return matchFilter && matchSearch;
-      });
-    }
-
-    function renderList() {
-      const fl = filteredLeads();
-      const chip = document.getElementById('countChip');
-      chip.textContent = LEADS.length === 0 ? 'Aucun prospect' : `${fl.length} prospect${fl.length > 1 ? 's' : ''}`;
-
-      // Toggle map empty state
-      const es = document.getElementById('emptyState');
-      if (LEADS.length === 0) { es.classList.remove('hidden'); } else { es.classList.add('hidden'); }
-
-      const el = document.getElementById('leadList');
-      if (LEADS.length === 0) {
-        el.innerHTML = `<div class="sidebar-empty">
-          <div class="se-icon">📂</div>
-          <p>Déposez un fichier GeoJSON sur la carte pour charger vos prospects.</p>
-        </div>`;
-        return;
-      }
-      if (fl.length === 0) {
-        el.innerHTML = `<div class="sidebar-empty"><div class="se-icon">🔍</div><p>Aucun résultat pour ce filtre.</p></div>`;
-        return;
-      }
-      el.innerHTML = fl.map(l => `
-        <div class="lead-item ${selectedId === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
-          <div class="lead-score ${scoreClass(l.score)}">${l.score}</div>
-          <div class="lead-info">
-            <div class="lead-name">${l.name}</div>
-            <div class="lead-meta">${l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : '—'} · ${l.commune || '—'}</div>
-          </div>
-          <span class="lead-status ${statusClass(l.status)}">${l.statusLabel}</span>
-        </div>
-      `).join('');
-    }
-
-    function setFilter(btn) {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      renderList();
-    }
-
-    function filterLeads() {
-      currentSearch = document.getElementById('searchInput').value;
-      renderList();
-    }
-
-    // ── IGN THUMBNAIL ────────────────────────────────────────────────────────
-    function ignThumbnailUrl(lat, lng, px = 300) {
-      const d = 0.0015; // ~150m buffer — bbox carrée → image carrée, pas de distorsion
-      const bbox = `${lat - d},${lng - d},${lat + d},${lng + d}`;
-      return `https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap` +
-             `&LAYERS=ORTHOIMAGERY.ORTHOPHOTOS&STYLES=&FORMAT=image/jpeg` +
-             `&CRS=EPSG:4326&BBOX=${bbox}&WIDTH=${px}&HEIGHT=${px}`;
-    }
-
-    // ── LIGHTBOX ──────────────────────────────────────────────────────────────
-    function openLightbox() {
-      const l = LEADS.find(x => x.id === selectedId);
-      if (!l) return;
-      document.getElementById('lb-img').src   = ignThumbnailUrl(l.lat, l.lng, 600);
-      document.getElementById('lb-name').textContent = l.name;
-      document.getElementById('lb-meta').textContent =
-        [l.commune, l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : null,
-         l.area ? Math.round(l.area).toLocaleString('fr') + ' m²' : null]
-        .filter(Boolean).join(' · ');
-      document.getElementById('lb-score').textContent = `⚡ ${l.score}/100`;
-      updateLightboxSave();
-      document.getElementById('lightbox').classList.add('open');
-      document.addEventListener('keydown', onLightboxKey);
-    }
-
-    function closeLightbox(e) {
-      if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
-      document.getElementById('lightbox').classList.remove('open');
-      document.removeEventListener('keydown', onLightboxKey);
-    }
-
-    function onLightboxKey(e) { if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('open'); } }
-
-    function updateLightboxSave() {
-      const btn = document.getElementById('lb-save');
-      if (!btn || !selectedId) return;
-      const saved = savedIds.has(selectedId);
-      btn.textContent = saved ? '⭐ Sauvegardé' : '🤍 Sauvegarder';
-      btn.classList.toggle('saved', saved);
-    }
-
-    // ── SAVE ─────────────────────────────────────────────────────────────────
-    function toggleSave() {
-      if (!selectedId) return;
-      if (savedIds.has(selectedId)) { savedIds.delete(selectedId); }
-      else { savedIds.add(selectedId); }
-      updateSaveButton();
-      updateLightboxSave();
-      renderList();
-    }
-
-    function updateSaveButton() {
-      const btn = document.getElementById('dp-btn-save');
-      if (!btn || !selectedId) return;
-      const saved = savedIds.has(selectedId);
-      btn.textContent = saved ? '⭐ Sauvegardé' : '🤍 Sauvegarder';
-      btn.classList.toggle('saved', saved);
-    }
-
-    // ── SELECT LEAD ──────────────────────────────────────────────────────────
-    function selectLead(id) {
-      selectedId = id;
-      const l = LEADS.find(l => l.id === id);
-      if (!l) return;
-
-      // Update markers
-      Object.entries(markerMap).forEach(([lid, m]) => {
-        m.setIcon(makeIcon(LEADS.find(x => x.id == lid).score, lid == id));
-      });
-
-      // Pan map
-      map.setView([l.lat, l.lng], 19, { animate: true });
-
-      // Header
-      document.getElementById('dp-name').textContent    = l.name;
-      document.getElementById('dp-address').textContent = [l.rue, l.code_postal, l.commune].filter(Boolean).join(', ') || '—';
-      const nafEl = document.getElementById('dp-naf');
-      nafEl.textContent = l.naf ? `NAF ${l.naf}` : ''; nafEl.style.display = l.naf ? '' : 'none';
-      const statusBadge = document.getElementById('dp-status-badge');
-      statusBadge.textContent  = l.statusLabel;
-      statusBadge.className    = `badge-status ${statusClass(l.status)}`;
-
-      // Potentiel
-      document.getElementById('dp-power').textContent       = l.puissance_kwc ? `${l.puissance_kwc.toLocaleString('fr')} kWc` : '—';
-      document.getElementById('dp-production').textContent  = l.production_mwh ? `${l.production_mwh.toLocaleString('fr')} MWh` : '—';
-      document.getElementById('dp-surface').textContent     = l.area ? `${Math.round(l.area).toLocaleString('fr')} m²` : '—';
-      document.getElementById('dp-consumption').textContent = l.consumption ? l.consumption.toFixed(1) : '—';
-      document.getElementById('dp-ratio').textContent       = l.ratio_autoproduction ? `×${l.ratio_autoproduction.toFixed(2)}` : '—';
-      document.getElementById('dp-score').textContent       = `${l.score}/100`;
-
-      // Toiture
-      document.getElementById('dp-orientation').textContent = l.orientation;
-      document.getElementById('dp-toit-type').textContent   = l.toit_plat;
-      document.getElementById('dp-shadings').textContent    = l.shadings;
-      document.getElementById('dp-mat').textContent         = l.mat_toit_class;
-
-      // Contact
-      document.getElementById('dp-director').textContent = l.director_name || '—';
-      document.getElementById('dp-phone').innerHTML   = l.phone   ? `<a href="tel:${l.phone}">${l.phone}</a>`     : '—';
-      document.getElementById('dp-email').innerHTML   = l.email   ? `<a href="mailto:${l.email}">${l.email}</a>` : '—';
-      document.getElementById('dp-website').innerHTML = l.website ? `<a href="https://${l.website.replace(/^https?:\/\//,'')}" target="_blank">${l.website}</a>` : '—';
-      document.getElementById('dp-linkedin').innerHTML = l.linkedin ? `<a href="${l.linkedin}" target="_blank">Voir profil</a>` : '—';
-
-      // Action buttons
-      document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
-      document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
-
-      // Thumbnail + map links
-      document.getElementById('dp-thumb').src = ignThumbnailUrl(l.lat, l.lng);
-      document.getElementById('dp-gmaps').href = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
-      document.getElementById('dp-streetview').href = `https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}`;
-
-      // Save button state
-      updateSaveButton();
-
-      document.getElementById('detailPanel').classList.add('visible');
-      renderList();
-    }
-
-    function closeDetail() {
-      selectedId = null;
-      document.getElementById('detailPanel').classList.remove('visible');
-      Object.entries(markerMap).forEach(([lid, m]) => {
-        m.setIcon(makeIcon(LEADS.find(l => l.id == lid).score, false));
-      });
-      renderList();
-    }
-
-    // ── EXPORT CSV (sauvegardés uniquement) ──────────────────────────────────
-    function exportCSV() {
-      const toExport = LEADS.filter(l => savedIds.has(l.id));
-      if (!toExport.length) {
-        showToast('⚠️ Aucun prospect sauvegardé — utilisez ⭐ sur une fiche');
-        return;
-      }
-      const header = ['Nom','Rue','Code postal','Commune','NAF','Puissance kWc','Production MWh','Surface m2','Ratio autoprod','Orientation','Toit plat','Ombrages','Matériau','Directeur','Téléphone','Email','Site web','LinkedIn','Score','Lat','Lng'];
-      const rows = toExport.map(l => [
-        l.name, l.rue, l.code_postal, l.commune, l.naf,
-        l.puissance_kwc, l.production_mwh, Math.round(l.area),
-        l.ratio_autoproduction, l.orientation, l.toit_plat,
-        l.shadings, l.mat_toit_class,
-        l.director_name, l.phone, l.email, l.website, l.linkedin,
-        l.score, l.lat, l.lng
-      ]);
-      const csv = [header, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
-      const blob = new Blob(['\uFEFF' + csv, { type: 'text/csv;charset=utf-8;' }]);
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `prospects_sauvegardés_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      showToast(`✅ ${toExport.length} prospect(s) exporté(s)`);
-    }
-
-    // ── INIT ─────────────────────────────────────────────────────────────────
-    renderList();
-  </script>
 </body>
 </html>
