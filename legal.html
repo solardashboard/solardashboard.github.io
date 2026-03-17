@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentions légales — SolarDashboard</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sun: #f59e0b; --sun-dark: #d97706;
+      --dark: #0f172a; --dark-2: #1e293b; --dark-3: #334155;
+      --text: #f1f5f9; --muted: #94a3b8;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 2.5rem;
+      background: rgba(15,23,42,0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.15s; }
+    .back-btn:hover { color: var(--text); }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; }
+    .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--sun), var(--sun-dark)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+    .sep { color: var(--dark-3); }
+
+    .page { max-width: 760px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+
+    .page-header { margin-bottom: 3rem; }
+    .page-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sun); margin-bottom: 0.75rem; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+    .page-date { font-size: 0.85rem; color: var(--muted); }
+
+    .section { margin-bottom: 2.5rem; }
+    h2 {
+      font-size: 1rem; font-weight: 700;
+      color: var(--sun);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(245,158,11,0.15);
+    }
+    p { font-size: 0.95rem; line-height: 1.75; color: #cbd5e1; margin-bottom: 0.75rem; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); font-weight: 600; }
+    a { color: var(--sun); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .card {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.9rem; line-height: 1.7; color: #cbd5e1;
+    }
+    .card + .card { margin-top: 0.75rem; }
+    .card strong { display: block; color: var(--text); font-weight: 700; margin-bottom: 0.25rem; }
+
+    .pi-notice {
+      background: rgba(245,158,11,0.07);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.9rem; line-height: 1.7; color: #cbd5e1;
+    }
+
+    footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 2rem; text-align: center; color: var(--muted); font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="./" class="back-btn">← Accueil</a>
+    <span class="sep">/</span>
+    <div class="logo"><div class="logo-icon">☀️</div> SolarDashboard</div>
+    <span class="sep">/</span>
+    <span style="font-size:0.9rem;color:var(--muted)">Mentions légales</span>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-header">
+      <div class="page-label">Informations légales</div>
+      <h1>Mentions légales</h1>
+      <p class="page-date">Dernière mise à jour : mars 2026</p>
+    </div>
+
+    <!-- 1. Éditeur -->
+    <div class="section">
+      <h2>1. Éditeur du site</h2>
+      <div class="card">
+        <strong>Gabriel Kasmi</strong>
+        SIREN: 998 924 062<br/>
+        Paris 12e, France.<br/>
+        Contact : <a href="mailto:gabriel.kasmi.services@gmail.com">gabriel.kasmi.services@gmail.com</a>
+      </div>
+    </div>
+
+    <!-- 2. Hébergement -->
+    <div class="section">
+      <h2>2. Hébergement</h2>
+      <div class="card">
+        <strong>GitHub Pages</strong>
+        GitHub, Inc. — 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis<br/>
+        <a href="https://pages.github.com" target="_blank">pages.github.com</a>
+      </div>
+    </div>
+
+    <!-- 3. Propriété intellectuelle -->
+    <div class="section">
+      <h2>3. Propriété intellectuelle</h2>
+      <div class="pi-notice">
+        L'ensemble des éléments constituant ce site — structure, code source, interfaces, textes,
+        graphismes et logotypes — est la propriété exclusive de Gabriel Kasmi et est protégé
+        par les dispositions du Code de la propriété intellectuelle français.
+      </div>
+      <p style="margin-top:1rem">
+        Toute reproduction, représentation, modification, publication, transmission ou dénaturation,
+        totale ou partielle, par quelque procédé que ce soit et sur quelque support que ce soit, est
+        strictement interdite sans l'autorisation écrite préalable de l'éditeur, sous peine de
+        poursuites judiciaires au titre de la contrefaçon (articles L.335-2 et suivants du CPI).
+      </p>
+      <p>
+        Les données cartographiques proviennent d'<strong>OpenStreetMap</strong> (licence ODbL) et
+        des services de la <strong>Géoplateforme IGN</strong> (orthophotographies BDORTHO).
+        Ces ressources sont utilisées conformément à leurs conditions d'utilisation respectives.
+      </p>
+      <p>
+        Les données de prospection chargées par l'utilisateur restent la propriété exclusive de 
+        Gabriel Kasmi. Gabriel Kasmi ne procède à aucun stockage, traitement ou transmission de ces données
+        vers un serveur tiers ; tout le traitement s'effectue localement dans le navigateur.
+      </p>
+    </div>
+
+    <!-- 4. Données personnelles -->
+    <div class="section">
+      <h2>4. Données personnelles et cookies</h2>
+      <p>
+        Ce site ne collecte aucune donnée personnelle et n'utilise pas de cookies de traçage.
+        L'accès à l'interface de prospection est protégé par un mot de passe stocké uniquement
+        en <em>sessionStorage</em> côté navigateur, sans transmission vers un serveur.
+      </p>
+      <p>
+        Conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés,
+        toute question relative aux données personnelles peut être adressée à :
+        <a href="mailto:gabriel.kasmi.services@gmail.com">gabriel.kasmi.services@gmail.com</a>.
+      </p>
+    </div>
+
+    <!-- 5. Responsabilité -->
+    <div class="section">
+      <h2>5. Limitation de responsabilité</h2>
+      <p>
+        Les informations présentées sur ce site sont fournies à titre indicatif.
+        Gabriel Kasmi ne saurait être tenu responsable des erreurs ou omissions dans les
+        données affichées, ni des décisions prises sur la base de ces informations.
+      </p>
+      <p>
+        Les estimations de puissance, de production et de potentiel solaire sont des
+        approximations à des fins de prospection et ne constituent pas une étude technique certifiée.
+      </p>
+    </div>
+
+    <!-- 6. Loi applicable -->
+    <div class="section">
+      <h2>6. Loi applicable et juridiction</h2>
+      <p>
+        Les présentes mentions légales sont soumises au droit français.
+        Tout litige relatif à l'utilisation de ce site relève de la compétence exclusive
+        des tribunaux français.
+      </p>
+    </div>
+
+  </div>
+
+  <footer>
+    © 2026 Gabriel Kasmi —
+    <a href="./">Accueil</a> ·
+    <a href="prospection/">Prospection</a>
+  </footer>
+
+</body>
+</html>
