@@ -4,14 +4,6 @@ Outil de prospection solaire à usage interne. Permet de visualiser des prospect
 sur carte à partir d'un fichier GeoJSON, d'accéder aux fiches détaillées (potentiel
 solaire, toiture, contact), et d'exporter une sélection en CSV.
 
-## Fonctionnalités
-
-- Carte interactive Leaflet avec clustering de markers
-- Chargement de données par drag & drop (GeoJSON)
-- Fiche prospect : potentiel solaire, toiture, contact, vue aérienne IGN
-- Sauvegarde de prospects et export CSV
-- Accès protégé par mot de passe
-
 ## Stack
 
 - HTML / CSS / JS vanilla — aucune dépendance de build
