@@ -66,6 +66,44 @@
           <button class="filter-btn" data-filter="saved" onclick="setFilter(this)">⭐ Sauvegardés</button>
         </div>
       </div>
+      <!-- ADVANCED FILTERS — shown after data load -->
+      <div class="adv-filters" id="advFilters" style="display:none">
+        <button class="adv-filters-toggle" onclick="toggleFilterPanel()">
+          <span>🎛️ Filtres avancés</span>
+          <div class="filter-toggle-right">
+            <span class="filter-reset-btn" id="filterResetBtn" onclick="event.stopPropagation(); resetFilters()" style="display:none">↺ Réinitialiser</span>
+            <span id="filterToggleIcon">▾</span>
+          </div>
+        </button>
+        <div class="adv-filters-body" id="advFiltersBody" style="display:none">
+
+          <div class="adv-filter-section">
+            <div class="adv-filter-label">Taille de chantier (k€)</div>
+            <div class="range-row">
+              <div class="range-input-row">
+                <span class="range-lbl">Min</span>
+                <input type="range" id="caRangeMin" oninput="onRangeInput()" />
+                <span class="range-val" id="caMinLabel">—</span>
+              </div>
+              <div class="range-input-row">
+                <span class="range-lbl">Max</span>
+                <input type="range" id="caRangeMax" oninput="onRangeInput()" />
+                <span class="range-val" id="caMaxLabel">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="adv-filter-section">
+            <div class="adv-filter-label">
+              Secteur d'activité
+              <button class="sector-toggle-all" onclick="toggleAllSectors(this)">Tout désélect.</button>
+            </div>
+            <div class="sector-list" id="sectorList"></div>
+          </div>
+
+        </div>
+      </div>
+
       <div class="lead-list" id="leadList"></div>
     </aside>
 

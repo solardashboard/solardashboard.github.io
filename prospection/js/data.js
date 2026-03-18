@@ -121,6 +121,7 @@ function loadGeoJSON(geojson, filename) {
   State.leads = _computeScores(points.map(_parseFeature).filter(Boolean));
 
   closeDetail();
+  renderFilters();
   initMarkers(State.leads);
 
   const bounds = L.latLngBounds(State.leads.map(l => [l.lat, l.lng]));
