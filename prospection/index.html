@@ -213,18 +213,95 @@
 
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-    <div class="lightbox-img-wrap">
-      <img class="lightbox-img" id="lb-img" src="" alt="Vue aérienne IGN" />
-      <canvas class="thumb-canvas" id="lb-canvas"></canvas>
-      <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    </div>
-    <div class="lightbox-bar">
-      <div class="lb-info">
-        <div class="lb-name" id="lb-name"></div>
-        <div class="lb-meta" id="lb-meta"></div>
+    <div class="lb-inner" id="lbInner">
+
+      <!-- Left: image + info bar -->
+      <div class="lb-left">
+        <div class="lightbox-img-wrap">
+          <img class="lightbox-img" id="lb-img" src="" alt="Vue aérienne IGN" />
+          <canvas class="thumb-canvas" id="lb-canvas"></canvas>
+          <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        </div>
+        <div class="lightbox-bar">
+          <div class="lb-info">
+            <div class="lb-name" id="lb-name"></div>
+            <div class="lb-meta" id="lb-meta"></div>
+            <div class="lb-contacts" id="lb-contacts"></div>
+          </div>
+          <div class="lb-actions">
+            <div class="lb-score" id="lb-score"></div>
+            <button class="lb-sizer-btn" id="lbSizerBtn" onclick="toggleSizer()">⚡ Dimensionner</button>
+            <button class="lb-save" id="lb-save" onclick="toggleSave(); updateLightboxSave()">🤍 Sauvegarder</button>
+          </div>
+        </div>
       </div>
-      <div class="lb-score" id="lb-score"></div>
-      <button class="lb-save" id="lb-save" onclick="toggleSave(); updateLightboxSave()">🤍 Sauvegarder</button>
+
+      <!-- Right: sizing tool -->
+      <div class="lb-sizer" id="lbSizer">
+        <div class="sizer-head">⚡ Dimensionnement</div>
+        <div class="sizer-body">
+
+          <div class="sizer-field">
+            <label class="sizer-label">Consommation annuelle</label>
+            <div class="sizer-input-row">
+              <input type="number" id="sizerConso" min="0" oninput="calcSizing()" />
+              <span class="sizer-unit">MWh/an</span>
+            </div>
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Surface de toiture</label>
+            <div class="sizer-input-row">
+              <input type="number" id="sizerSurface" min="0" oninput="calcSizing()" />
+              <span class="sizer-unit">m²</span>
+            </div>
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Taille d'installation</label>
+            <div class="sizer-input-row">
+              <input type="number" id="sizerPuissance" min="0" step="10" oninput="calcSizing()" />
+              <span class="sizer-unit">kWc</span>
+            </div>
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Prix de l'électricité</label>
+            <div class="sizer-input-row">
+              <input type="number" id="sizerPrixElec" min="0" value="120" oninput="calcSizing()" />
+              <span class="sizer-unit">€/MWh</span>
+            </div>
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Autoconsommation — <span id="sizerAutoconsoVal">60%</span></label>
+            <input type="range" class="sizer-range" id="sizerAutoconso" min="0" max="100" value="60" step="5" oninput="calcSizing()" />
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Hausse annuelle élec. — <span id="sizerHausseVal">3,0%</span></label>
+            <input type="range" class="sizer-range" id="sizerHausse" min="0" max="10" value="3" step="0.5" oninput="calcSizing()" />
+          </div>
+
+          <div class="sizer-results">
+            <div class="sizer-result-title">Résultats</div>
+            <div class="sizer-kpi-row">
+              <div class="sizer-kpi">
+                <div class="sizer-kpi-label">CA chantier</div>
+                <div class="sizer-kpi-val" id="srCA">—</div>
+              </div>
+              <div class="sizer-kpi">
+                <div class="sizer-kpi-label">Payback client</div>
+                <div class="sizer-kpi-val" id="srPayback">—</div>
+              </div>
+            </div>
+            <div class="sizer-result-row"><span>Production annuelle</span><span id="srProd">—</span></div>
+            <div class="sizer-result-row"><span>Économie annuelle</span><span id="srEco">—</span></div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
