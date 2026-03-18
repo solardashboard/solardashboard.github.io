@@ -4,7 +4,8 @@ function openLightbox() {
   const l = State.leads.find(x => x.id === State.selectedId);
   if (!l) return;
 
-  document.getElementById('lb-img').src      = ignThumbnailUrl(l.lat, l.lng, 600);
+  document.getElementById('lb-img').src      = ignThumbnailUrl(l.lat, l.lng, 600, l.polygonBbox);
+  drawPolygon('lb-canvas', l.polygonRing, l.lat, l.lng, l.polygonBbox, 600);
   document.getElementById('lb-name').textContent = l.name;
   document.getElementById('lb-meta').textContent = [
     l.commune,

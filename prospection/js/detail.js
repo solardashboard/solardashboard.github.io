@@ -1,11 +1,62 @@
 // Detail panel: prospect selection, population, and save toggle.
 
-function ignThumbnailUrl(lat, lng, px = 300) {
-  const d    = CONFIG.IGN_BUFFER_DEG;
-  const bbox = `${lat - d},${lng - d},${lat + d},${lng + d}`;
+// ── IGN image helpers ─────────────────────────────────────────────────────
+
+/** Compute a square bbox for the WMS request.
+ *  If a polygon bbox is provided, it expands around it with padding and
+ *  squares it so the resulting image has no distortion. */
+function _computeImgBbox(lat, lng, polygonBbox) {
+  const pad = CONFIG.IGN_BUFFER_DEG;
+  if (polygonBbox) {
+    let { minLat, maxLat, minLng, maxLng } = polygonBbox;
+    minLat -= pad; maxLat += pad;
+    minLng -= pad; maxLng += pad;
+    // Expand the smaller dimension to make the bbox square
+    const dLat = maxLat - minLat;
+    const dLng = maxLng - minLng;
+    if (dLat > dLng) { const d = (dLat - dLng) / 2; minLng -= d; maxLng += d; }
+    else              { const d = (dLng - dLat) / 2; minLat -= d; maxLat += d; }
+    return { minLat, maxLat, minLng, maxLng };
+  }
+  return { minLat: lat - pad, maxLat: lat + pad, minLng: lng - pad, maxLng: lng + pad };
+}
+
+function ignThumbnailUrl(lat, lng, px = 300, polygonBbox = null) {
+  const { minLat, maxLat, minLng, maxLng } = _computeImgBbox(lat, lng, polygonBbox);
+  const bbox = `${minLat},${minLng},${maxLat},${maxLng}`;
   return `${CONFIG.IGN_WMS}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap`
        + `&LAYERS=${CONFIG.IGN_LAYER}&STYLES=&FORMAT=image/jpeg`
        + `&CRS=EPSG:4326&BBOX=${bbox}&WIDTH=${px}&HEIGHT=${px}`;
+}
+
+/** Project polygon ring onto canvas and draw it. */
+function drawPolygon(canvasId, polygonRing, lat, lng, polygonBbox, px) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !polygonRing) { if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); return; }
+  canvas.width = px; canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, px, px);
+
+  const { minLat, maxLat, minLng, maxLng } = _computeImgBbox(lat, lng, polygonBbox);
+  const dLng = maxLng - minLng;
+  const dLat = maxLat - minLat;
+
+  const project = ([lng, lat]) => [
+    ((lng - minLng) / dLng) * px,
+    ((maxLat - lat)  / dLat) * px,
+  ];
+
+  ctx.beginPath();
+  polygonRing.forEach(([lng, lat], i) => {
+    const [x, y] = project([lng, lat]);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle   = 'rgba(245,158,11,0.18)';
+  ctx.fill();
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth   = 2.5;
+  ctx.stroke();
 }
 
 function selectLead(id) {
@@ -54,8 +105,9 @@ function selectLead(id) {
   document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
   document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
 
-  // Thumbnail + map links
-  document.getElementById('dp-thumb').src       = ignThumbnailUrl(l.lat, l.lng);
+  // Thumbnail + polygon overlay + map links
+  document.getElementById('dp-thumb').src       = ignThumbnailUrl(l.lat, l.lng, 300, l.polygonBbox);
+  drawPolygon('dp-canvas', l.polygonRing, l.lat, l.lng, l.polygonBbox, 300);
   document.getElementById('dp-gmaps').href      = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
   document.getElementById('dp-streetview').href = `https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}`;
 

@@ -113,6 +113,7 @@
 
           <div class="detail-thumb-wrap" onclick="openLightbox()">
             <img class="detail-thumb" id="dp-thumb" src="" alt="Vue aérienne IGN" />
+            <canvas class="thumb-canvas" id="dp-canvas"></canvas>
             <div class="detail-thumb-zoom">🔍</div>
           </div>
           <div class="thumb-links">
@@ -171,6 +172,7 @@
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
     <div class="lightbox-img-wrap">
       <img class="lightbox-img" id="lb-img" src="" alt="Vue aérienne IGN" />
+      <canvas class="thumb-canvas" id="lb-canvas"></canvas>
       <button class="lightbox-close" onclick="closeLightbox()">✕</button>
     </div>
     <div class="lightbox-bar">

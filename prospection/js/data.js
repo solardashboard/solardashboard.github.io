@@ -1,5 +1,22 @@
 // GeoJSON parsing, score computation, and data loading.
 
+// ── Geometry helpers ──────────────────────────────────────────────────────
+function _polygonCentroid(ring) {
+  // ring: [[lng, lat], ...] — handles closed rings (first == last)
+  const n = (ring[0][0] === ring[ring.length-1][0] && ring[0][1] === ring[ring.length-1][1])
+    ? ring.length - 1 : ring.length;
+  let sumLng = 0, sumLat = 0;
+  for (let i = 0; i < n; i++) { sumLng += ring[i][0]; sumLat += ring[i][1]; }
+  return [sumLng / n, sumLat / n]; // [lng, lat]
+}
+
+function _polygonBbox(ring) {
+  const lngs = ring.map(c => c[0]);
+  const lats  = ring.map(c => c[1]);
+  return { minLng: Math.min(...lngs), maxLng: Math.max(...lngs),
+           minLat: Math.min(...lats), maxLat: Math.max(...lats) };
+}
+
 const STATUS_MAP = {
   new: 'new', nouveau: 'new',
   contact: 'contact', 'en cours': 'contact',
@@ -12,8 +29,24 @@ const STATUS_LABELS = {
 };
 
 function _parseFeature(feature, index) {
-  const p          = feature.properties || {};
-  const [lng, lat] = feature.geometry.coordinates;
+  const p   = feature.properties || {};
+  const geo = feature.geometry;
+
+  // Support Point, Polygon and MultiPolygon
+  let lng, lat, polygonRing = null, polygonBbox = null;
+  if (geo.type === 'Point') {
+    [lng, lat] = geo.coordinates;
+  } else if (geo.type === 'Polygon') {
+    polygonRing = geo.coordinates[0];
+    [lng, lat]  = _polygonCentroid(polygonRing);
+    polygonBbox = _polygonBbox(polygonRing);
+  } else if (geo.type === 'MultiPolygon') {
+    polygonRing = geo.coordinates[0][0];
+    [lng, lat]  = _polygonCentroid(polygonRing);
+    polygonBbox = _polygonBbox(polygonRing);
+  } else {
+    return null; // unsupported geometry, skip
+  }
   const rawStatus  = (p.status || p.statut || 'new').toLowerCase();
   const status     = STATUS_MAP[rawStatus] || 'new';
 
@@ -47,7 +80,10 @@ function _parseFeature(feature, index) {
     // Status
     status,
     statusLabel: STATUS_LABELS[status],
-    score: 0,   // computed after parsing all features
+    // Geometry
+    polygonRing,  // [[lng,lat],...] or null
+    polygonBbox,  // {minLat,maxLat,minLng,maxLng} or null
+    score: 0,
   };
 }
 
@@ -65,13 +101,14 @@ function loadGeoJSON(geojson, filename) {
     return;
   }
 
-  const points = geojson.features.filter(f => f.geometry?.type === 'Point');
+  const SUPPORTED = ['Point', 'Polygon', 'MultiPolygon'];
+  const points = geojson.features.filter(f => SUPPORTED.includes(f.geometry?.type));
   if (!points.length) {
-    showToast('❌ Aucun Point trouvé dans le GeoJSON');
+    showToast('❌ Aucune géométrie supportée (Point, Polygon, MultiPolygon)');
     return;
   }
 
-  State.leads = _computeScores(points.map(_parseFeature))
+  State.leads = _computeScores(points.map(_parseFeature).filter(Boolean))
     .sort((a, b) => b.score - a.score);
 
   closeDetail();
