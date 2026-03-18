@@ -78,7 +78,7 @@ function selectLead(id) {
   nafEl.style.display = (sector || l.naf) ? '' : 'none';
 
   // Potentiel économique
-  document.getElementById('dp-ca').textContent      = l.ca_potentiel  ? `${Math.round(l.ca_potentiel).toLocaleString('fr')} k€` : '—';
+  document.getElementById('dp-ca').textContent      = l.ca_potentiel  ? formatKeuros(l.ca_potentiel)  : '—';
   document.getElementById('dp-payback').textContent = l.payback_years ? `${l.payback_years} ans`                                 : '—';
 
   // Potentiel solaire

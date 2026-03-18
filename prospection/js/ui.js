@@ -1,5 +1,12 @@
 // Sidebar rendering, filters, search, and toast notifications.
 
+/** Format a k€ value: stays in k€ below 1 000, switches to M€ above. */
+function formatKeuros(k, suffix = '') {
+  if (!isFinite(k) || isNaN(k)) return '—';
+  if (k >= 1000) return `${(k / 1000).toFixed(1).replace('.', ',')} M€${suffix}`;
+  return `${Math.round(k).toLocaleString('fr')} k€${suffix}`;
+}
+
 function quartileClass(q) { return `score-q${q}`; }
 function statusClass(s)   { return { new: 's-new', contact: 's-contact', signed: 's-signed', lost: 's-lost' }[s] || 's-new'; }
 
@@ -60,8 +67,8 @@ function renderFilters() {
 function _updateRangeLabels() {
   const vMin = +document.getElementById('caRangeMin').value;
   const vMax = +document.getElementById('caRangeMax').value;
-  document.getElementById('caMinLabel').textContent = vMin.toLocaleString('fr') + ' k€';
-  document.getElementById('caMaxLabel').textContent = vMax.toLocaleString('fr') + ' k€';
+  document.getElementById('caMinLabel').textContent = formatKeuros(vMin);
+  document.getElementById('caMaxLabel').textContent = formatKeuros(vMax);
 }
 
 function _setFilterDirty(dirty) {
@@ -129,7 +136,7 @@ function renderList() {
 
   const totalCA = State.leads.reduce((sum, l) => sum + (l.ca_potentiel || 0), 0);
   if (totalCA > 0 && totalChip) {
-    totalChip.textContent  = `${Math.round(totalCA).toLocaleString('fr')} k€`;
+    totalChip.textContent   = formatKeuros(totalCA);
     totalChip.style.display = '';
   } else if (totalChip) {
     totalChip.style.display = 'none';

@@ -348,12 +348,22 @@ body {
 /* Two-column container */
 .lb-inner {
   display: flex; align-items: stretch;
-  width: min(600px, 92vw); max-height: 90vh;
+  /* width adapts to lb-left content — no fixed width needed */
   transition: width 0.25s ease;
 }
-.lb-inner.sizer-open { width: min(980px, 96vw); }
 
-.lb-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* lb-left drives the image size.
+   The image is square, so its side = min(max-size, vw, vh-minus-bar).
+   --bar is the approximate height of the info bar below the image. */
+.lb-left {
+  flex: none;
+  width: min(600px, 92vw, calc(90vh - 130px));
+  display: flex; flex-direction: column;
+}
+/* When sizer is open, image column shrinks a bit to leave room */
+.lb-inner.sizer-open .lb-left {
+  width: min(480px, 50vw, calc(90vh - 130px));
+}
 
 .lightbox-img-wrap {
   position: relative; overflow: hidden; flex-shrink: 0;

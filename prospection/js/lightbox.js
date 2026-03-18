@@ -76,9 +76,16 @@ function toggleSizer() {
   if (open) calcSizing();
 }
 
-function calcSizing() {
+function calcSizing(source) {
   const l = State.leads.find(x => x.id === State.selectedId);
   if (!l) return;
+
+  // Surface → puissance (sens unique)
+  if (source === 'surface') {
+    const surface = parseFloat(document.getElementById('sizerSurface').value) || 0;
+    const derived = surface > 0 ? Math.round(surface * 0.8 / 6.5 * 10) / 10 : '';
+    document.getElementById('sizerPuissance').value = derived;
+  }
 
   const kwc       = parseFloat(document.getElementById('sizerPuissance').value) || 0;
   const prixElec  = parseFloat(document.getElementById('sizerPrixElec').value)  || 0;
@@ -116,8 +123,8 @@ function calcSizing() {
   // Économie année 1
   const ecoAn1 = prodMWh * autoconso * prixElec;
 
-  document.getElementById('srCA').textContent      = `${Math.round(ca_k).toLocaleString('fr')} k€`;
+  document.getElementById('srCA').textContent      = formatKeuros(ca_k);
   document.getElementById('srPayback').textContent = payback ? `${payback} ans` : '> 50 ans';
   document.getElementById('srProd').textContent    = `${Math.round(prodMWh).toLocaleString('fr')} MWh/an`;
-  document.getElementById('srEco').textContent     = `${(ecoAn1 / 1000).toFixed(1)} k€/an`;
+  document.getElementById('srEco').textContent     = formatKeuros(ecoAn1 / 1000, '/an');
 }
