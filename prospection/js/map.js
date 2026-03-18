@@ -32,8 +32,12 @@ function initMap() {
   map.addLayer(cluster);
 }
 
-function makeIcon(score, selected) {
-  const color = score > 50 ? '#16a34a' : score >= 20 ? '#d97706' : '#64748b';
+function _quartileColor(q) {
+  return q === 4 ? '#16a34a' : q === 3 ? '#4ade80' : q === 2 ? '#86efac' : '#64748b';
+}
+
+function makeIcon(quartile, rank, selected) {
+  const color = _quartileColor(quartile);
   const size  = selected ? 38 : 30;
   const svg   = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 30 30">
     <circle cx="15" cy="15" r="13" fill="${color}"
@@ -42,7 +46,7 @@ function makeIcon(score, selected) {
       stroke-width="${selected ? 2.5 : 1.5}"/>
     <text x="15" y="19.5" text-anchor="middle"
       font-size="11" font-family="Inter,sans-serif"
-      font-weight="800" fill="#fff">${score}</text>
+      font-weight="800" fill="${quartile <= 2 ? '#0f172a' : '#fff'}">${rank}</text>
   </svg>`;
   return L.divIcon({ html: svg, className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
 }
@@ -52,7 +56,7 @@ function initMarkers(leads) {
   Object.keys(markerMap).forEach(k => delete markerMap[k]);
 
   leads.forEach(lead => {
-    const m = L.marker([lead.lat, lead.lng], { icon: makeIcon(lead.score, false) });
+    const m = L.marker([lead.lat, lead.lng], { icon: makeIcon(lead.quartile, lead.rank, false) });
     const meta = [
       lead.commune,
       lead.puissance_kwc ? `${lead.puissance_kwc.toLocaleString('fr')} kWc` : null,
@@ -62,7 +66,7 @@ function initMarkers(leads) {
       <div class="popup-inner">
         <strong>${lead.name}</strong>
         <div class="pop-meta">${meta}</div>
-        <div class="pop-score">⚡ Score ${lead.score}/100</div>
+        <div class="pop-score">🏆 Rang #${lead.rank}</div>
       </div>
     `, { offset: [0, -4] });
 
@@ -75,6 +79,6 @@ function initMarkers(leads) {
 function refreshMarkers() {
   Object.entries(markerMap).forEach(([lid, m]) => {
     const lead = State.leads.find(l => l.id == lid);
-    if (lead) m.setIcon(makeIcon(lead.score, lid == State.selectedId));
+    if (lead) m.setIcon(makeIcon(lead.quartile, lead.rank, lid == State.selectedId));
   });
 }

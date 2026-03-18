@@ -46,6 +46,7 @@
     <span class="topbar-title">Prospection</span>
     <div class="topbar-right">
       <span class="stat-chip" id="countChip">Aucun prospect</span>
+      <span class="stat-chip stat-chip-ca" id="totalChip" style="display:none"></span>
       <button class="btn-export" onclick="exportCSV()">📤 Exporter CSV</button>
     </div>
   </div>
@@ -105,7 +106,6 @@
           <div class="detail-address" id="dp-address"></div>
           <div class="detail-badges">
             <span class="badge-naf" id="dp-naf"></span>
-            <span class="badge-status s-new" id="dp-status-badge"></span>
           </div>
         </div>
 
@@ -121,6 +121,14 @@
             <a class="thumb-link" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
           </div>
 
+          <div class="detail-section detail-section-eco">
+            <div class="detail-section-title">💰 Potentiel économique</div>
+            <div class="detail-grid">
+              <div class="detail-field"><div class="detail-field-label">Valeur chantier</div><div class="detail-field-val" id="dp-ca"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Retour sur invest.</div><div class="detail-field-val" id="dp-payback"></div></div>
+            </div>
+          </div>
+
           <div class="detail-section">
             <div class="detail-section-title">⚡ Potentiel solaire</div>
             <div class="detail-grid">
@@ -128,8 +136,6 @@
               <div class="detail-field"><div class="detail-field-label">Production</div><div class="detail-field-val" id="dp-production"></div></div>
               <div class="detail-field"><div class="detail-field-label">Surface toit</div><div class="detail-field-val" id="dp-surface"></div></div>
               <div class="detail-field"><div class="detail-field-label">Conso. (MWh)</div><div class="detail-field-val" id="dp-consumption"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Ratio autoprod.</div><div class="detail-field-val" id="dp-ratio"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Score</div><div class="detail-field-val" id="dp-score"></div></div>
             </div>
           </div>
 
@@ -138,7 +144,6 @@
             <div class="detail-grid">
               <div class="detail-field"><div class="detail-field-label">Orientation</div><div class="detail-field-val" id="dp-orientation"></div></div>
               <div class="detail-field"><div class="detail-field-label">Type</div><div class="detail-field-val" id="dp-toit-type"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Ombrages</div><div class="detail-field-val" id="dp-shadings"></div></div>
               <div class="detail-field"><div class="detail-field-label">Matériau</div><div class="detail-field-val" id="dp-mat"></div></div>
             </div>
           </div>
@@ -190,6 +195,7 @@
   <script src="js/state.js"></script>
   <script src="js/map.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/naf.js"></script>
   <script src="js/detail.js"></script>
   <script src="js/lightbox.js"></script>
   <script src="js/data.js"></script>

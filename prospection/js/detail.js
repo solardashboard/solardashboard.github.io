@@ -73,26 +73,24 @@ function selectLead(id) {
     [l.rue, l.code_postal, l.commune].filter(Boolean).join(', ') || '—';
 
   const nafEl = document.getElementById('dp-naf');
-  nafEl.textContent    = l.naf ? `NAF ${l.naf}` : '';
-  nafEl.style.display  = l.naf ? '' : 'none';
+  const sector = nafToSector(l.naf);
+  nafEl.textContent   = sector || (l.naf ? `NAF ${l.naf}` : '');
+  nafEl.style.display = (sector || l.naf) ? '' : 'none';
 
-  const statusBadge      = document.getElementById('dp-status-badge');
-  statusBadge.textContent = l.statusLabel;
-  statusBadge.className   = `badge-status ${statusClass(l.status)}`;
+  // Potentiel économique
+  document.getElementById('dp-ca').textContent      = l.ca_potentiel  ? `${Math.round(l.ca_potentiel).toLocaleString('fr')} k€` : '—';
+  document.getElementById('dp-payback').textContent = l.payback_years ? `${l.payback_years} ans`                                 : '—';
 
   // Potentiel solaire
-  document.getElementById('dp-power').textContent       = l.puissance_kwc ? `${l.puissance_kwc.toLocaleString('fr')} kWc` : '—';
+  document.getElementById('dp-power').textContent       = l.puissance_kwc  ? `${l.puissance_kwc.toLocaleString('fr')} kWc`  : '—';
   document.getElementById('dp-production').textContent  = l.production_mwh ? `${l.production_mwh.toLocaleString('fr')} MWh` : '—';
   document.getElementById('dp-surface').textContent     = l.area           ? `${Math.round(l.area).toLocaleString('fr')} m²` : '—';
-  document.getElementById('dp-consumption').textContent = l.consumption     ? l.consumption.toFixed(1) : '—';
-  document.getElementById('dp-ratio').textContent       = l.ratio_autoproduction ? `×${l.ratio_autoproduction.toFixed(2)}` : '—';
-  document.getElementById('dp-score').textContent       = `${l.score}/100`;
+  document.getElementById('dp-consumption').textContent = l.consumption    ? `${l.consumption.toFixed(1)} MWh`               : '—';
 
   // Toiture
-  document.getElementById('dp-orientation').textContent = l.orientation;
-  document.getElementById('dp-toit-type').textContent   = l.toit_plat;
-  document.getElementById('dp-shadings').textContent    = l.shadings;
-  document.getElementById('dp-mat').textContent         = l.mat_toit_class;
+  document.getElementById('dp-orientation').textContent = l.orientation    || '—';
+  document.getElementById('dp-toit-type').textContent   = l.toit_plat      || '—';
+  document.getElementById('dp-mat').textContent         = l.mat_toit_class || '—';
 
   // Contact
   document.getElementById('dp-director').textContent  = l.director_name || '—';

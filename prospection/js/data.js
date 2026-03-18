@@ -61,16 +61,19 @@ function _parseFeature(feature, index) {
     // Business
     naf: p.naf || '',
     // Solar potential
-    puissance_kwc:       parseFloat(p.puissance_kwc)       || 0,
-    production_mwh:      parseFloat(p.production_mwh)      || 0,
-    area:                parseFloat(p.area)                 || 0,
-    consumption:         parseFloat(p.consumption)         || 0,
-    ratio_autoproduction:parseFloat(p.ratio_autoproduction)|| 0,
+    puissance_kwc:        parseFloat(p.puissance_kwc)        || 0,
+    production_mwh:       parseFloat(p.production_mwh)       || 0,
+    area:                 parseFloat(p.area)                  || 0,
+    consumption:          parseFloat(p.consumption)          || 0,
+    ratio_autoproduction: parseFloat(p.ratio_autoproduction) || 0,
+    priorite_score:       parseFloat(p.priorite_score)       || 0,
     // Roof
-    orientation:    p.orientation   || '—',
-    toit_plat:      (p.toit_plat === 'True' || p.toit_plat === true) ? 'Plat' : (p.toit_plat ? 'Pentu' : '—'),
-    shadings:       p.shadings       || '—',
-    mat_toit_class: p.mat_toit_class || '—',
+    orientation:    (p.orientation    && p.orientation    !== 'nsp') ? p.orientation    : '—',
+    toit_plat:      (p.toit_plat === 'True' || p.toit_plat === true) ? 'Plat' : (p.toit_plat && p.toit_plat !== 'False' && p.toit_plat !== false) ? 'Pentu' : '—',
+    mat_toit_class: (p.mat_toit_class && p.mat_toit_class !== 'nsp') ? p.mat_toit_class : '—',
+    // Economics
+    ca_potentiel:  parseFloat(p.CA_potentiel_k_euros) || 0,
+    payback_years: parseFloat(p.payback_years)        || 0,
     // Contact
     phone:        p.phone         || p.telephone || '',
     email:        p.email         || '',
@@ -88,10 +91,17 @@ function _parseFeature(feature, index) {
 }
 
 function _computeScores(leads) {
-  const maxP = Math.max(...leads.map(l => l.puissance_kwc), 1);
-  return leads.map(l => ({
+  // Sort by priorite_score descending, assign rank and quartile (4=best, 1=lowest)
+  const sorted = [...leads].sort((a, b) => b.priorite_score - a.priorite_score);
+  const n = sorted.length;
+  return sorted.map((l, i) => ({
     ...l,
-    score: Math.max(10, Math.min(99, Math.round((l.puissance_kwc / maxP) * 89) + 10)),
+    rank:     i + 1,
+    quartile: n <= 1 ? 4
+            : i < n * 0.25 ? 4
+            : i < n * 0.5  ? 3
+            : i < n * 0.75 ? 2
+            : 1,
   }));
 }
 
@@ -108,8 +118,7 @@ function loadGeoJSON(geojson, filename) {
     return;
   }
 
-  State.leads = _computeScores(points.map(_parseFeature).filter(Boolean))
-    .sort((a, b) => b.score - a.score);
+  State.leads = _computeScores(points.map(_parseFeature).filter(Boolean));
 
   closeDetail();
   initMarkers(State.leads);

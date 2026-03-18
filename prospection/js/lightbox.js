@@ -12,7 +12,7 @@ function openLightbox() {
     l.puissance_kwc ? `${l.puissance_kwc.toLocaleString('fr')} kWc` : null,
     l.area ? `${Math.round(l.area).toLocaleString('fr')} m²` : null,
   ].filter(Boolean).join(' · ');
-  document.getElementById('lb-score').textContent = `⚡ ${l.score}/100`;
+  document.getElementById('lb-score').textContent = `🏆 #${l.rank}`;
 
   updateLightboxSave();
   document.getElementById('lightbox').classList.add('open');
