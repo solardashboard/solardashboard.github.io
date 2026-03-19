@@ -82,3 +82,12 @@ function refreshMarkers() {
     if (lead) m.setIcon(makeIcon(lead.quartile, lead.rank, lid == State.selectedId));
   });
 }
+
+function syncMapToFilter(visibleIds) {
+  const visible = new Set(visibleIds.map(Number));
+  Object.entries(markerMap).forEach(([lid, m]) => {
+    const show = visible.has(Number(lid));
+    if (show && !cluster.hasLayer(m)) cluster.addLayer(m);
+    else if (!show && cluster.hasLayer(m)) cluster.removeLayer(m);
+  });
+}

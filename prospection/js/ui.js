@@ -142,6 +142,9 @@ function renderList() {
     totalChip.style.display = 'none';
   }
 
+  // Sync carte : n'afficher que les markers filtrés
+  syncMapToFilter(fl.map(l => l.id));
+
   es.classList.toggle('hidden', State.leads.length > 0);
 
   if (State.leads.length === 0) {

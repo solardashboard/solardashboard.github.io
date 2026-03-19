@@ -89,8 +89,9 @@ function calcSizing(source) {
   }
 
   const kwc       = parseFloat(document.getElementById('sizerPuissance').value) || 0;
+  const consoMwh  = parseFloat(document.getElementById('sizerConso').value)     || 0; // MWh/an (label = MWh/an)
   const prixElec  = parseFloat(document.getElementById('sizerPrixElec').value)  || 0;
-  const autoconso = parseFloat(document.getElementById('sizerAutoconso').value) / 100; // fraction
+  const autoconso = parseFloat(document.getElementById('sizerAutoconso').value) / 100; // fraction slider
   const hausse    = parseFloat(document.getElementById('sizerHausse').value)    / 100; // fraction
 
   document.getElementById('sizerAutoconsoVal').textContent = Math.round(autoconso * 100) + '%';
@@ -112,17 +113,24 @@ function calcSizing(source) {
     ? l.production_mwh * (kwc / l.puissance_kwc)
     : kwc * 1.1;
 
+  // Taux d'autoconsommation effectif :
+  //   si conso < production → on ne peut pas autoconsommer plus que conso/prod
+  //   si conso >= production → le slider s'applique tel quel
+  const autoconsoEff = (consoMwh > 0 && prodMWh > 0)
+    ? Math.min(autoconso, consoMwh / prodMWh)
+    : autoconso;
+
   // Payback cumulatif (même algo que le modèle Python) :
-  //   Σ production × (1−0.5%)^t × autoconso × prix_elec × (1+hausse)^t ≥ invest
+  //   Σ production × (1−0.5%)^t × autoconso_eff × prix_elec × (1+hausse)^t ≥ invest
   const DEGR = 0.005;
   let cumul = 0, payback = null;
   for (let t = 0; t < 50; t++) {
-    cumul += prodMWh * Math.pow(1 - DEGR, t) * autoconso * prixElec * Math.pow(1 + hausse, t);
+    cumul += prodMWh * Math.pow(1 - DEGR, t) * autoconsoEff * prixElec * Math.pow(1 + hausse, t);
     if (cumul >= investE) { payback = t + 1; break; }
   }
 
   // Économie année 1
-  const ecoAn1 = prodMWh * autoconso * prixElec;
+  const ecoAn1 = prodMWh * autoconsoEff * prixElec;
 
   document.getElementById('srCA').textContent      = formatKeuros(ca_k);
   document.getElementById('srPayback').textContent = payback ? `${payback} ans` : '> 50 ans';
