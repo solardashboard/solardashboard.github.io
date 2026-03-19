@@ -127,6 +127,7 @@ function loadGeoJSON(geojson, filename) {
   const bounds = L.latLngBounds(State.leads.map(l => [l.lat, l.lng]));
   map.fitBounds(bounds, { padding: [40, 40] });
 
+  _track('geojson_charge', 'prospects_count', State.leads.length);
   renderList();
   showToast(`✅ ${State.leads.length} prospects chargés depuis ${filename}`);
 }

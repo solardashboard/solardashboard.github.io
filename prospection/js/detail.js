@@ -109,6 +109,7 @@ function selectLead(id) {
   document.getElementById('dp-gmaps').href      = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
   document.getElementById('dp-streetview').href = `https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}`;
 
+  _track('prospect_consulte', 'prospect_rang', l.rank);
   updateSaveButton();
   document.getElementById('detailPanel').classList.add('visible');
   renderList();
@@ -124,9 +125,11 @@ function closeDetail() {
 // ── Save ──────────────────────────────────────────────────────────────────
 function toggleSave() {
   if (!State.selectedId) return;
-  State.savedIds.has(State.selectedId)
+  const wasSaved = State.savedIds.has(State.selectedId);
+  wasSaved
     ? State.savedIds.delete(State.selectedId)
     : State.savedIds.add(State.selectedId);
+  if (!wasSaved) _track('prospect_sauvegarde', 'total_sauvegardes', State.savedIds.size);
   updateSaveButton();
   updateLightboxSave();
   renderList();

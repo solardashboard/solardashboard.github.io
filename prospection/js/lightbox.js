@@ -42,6 +42,7 @@ function openLightbox() {
   document.getElementById('lbSizerBtn').classList.remove('active');
   calcSizing();
 
+  _track('lightbox_ouverte');
   updateLightboxSave();
   document.getElementById('lightbox').classList.add('open');
   document.addEventListener('keydown', _onLightboxKey);
@@ -73,7 +74,7 @@ function toggleSizer() {
   const btn   = document.getElementById('lbSizerBtn');
   const open  = inner.classList.toggle('sizer-open');
   btn.classList.toggle('active', open);
-  if (open) calcSizing();
+  if (open) { _track('dimensionnement_ouvert'); calcSizing(); }
 }
 
 function calcSizing(source) {

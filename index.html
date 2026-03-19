@@ -47,10 +47,8 @@
     }
     .logo-icon {
       width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
       border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
+      object-fit: cover;
     }
     .nav-cta {
       background: linear-gradient(135deg, var(--sun), var(--sun-dark));
@@ -264,98 +262,36 @@
       font-size: 0.85rem;
     }
   </style>
+
+  <!-- Consentement RGPD + Clarity (chargé uniquement après accord) -->
+  <script src="consent.js" defer></script>
 </head>
 <body>
 
   <nav>
     <div class="logo">
-      <div class="logo-icon">☀️</div>
+      <img src="assets/icon.png" class="logo-icon" alt="SolarDashboard" />
       SolarDashboard
     </div>
     <a href="prospection/" class="nav-cta">Voir la démo →</a>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="badge">✦ Outil de prospection solaire</div>
-    <h1>Identifiez les meilleurs<br/><span>toits pour le solaire</span></h1>
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">✦ Outil de prospection solaire</div>
+  <h1>Trouvez vos prochains<br/><span>chantiers solaires</span></h1>
+  <p class="hero-sub">
     <p class="hero-sub">
-      Visualisez les prospects sur carte, filtrez par potentiel de production,
-      et pilotez vos démarches commerciales depuis une interface unifiée.
-    </p>
-    <div class="hero-actions">
-      <a href="prospection/" class="btn-primary">
-        🗺️ Lancer la carte de prospection
-      </a>
-      <a href="#features" class="btn-secondary">
-        En savoir plus ↓
-      </a>
-    </div>
-
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num">50 k+</div>
-        <div class="stat-label">Toits analysés</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">98 %</div>
-        <div class="stat-label">Précision d'irradiation</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">3×</div>
-        <div class="stat-label">Gain de productivité</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section class="section" id="features">
-    <div class="section-label">Fonctionnalités</div>
-    <h2 class="section-title">Tout ce qu'il faut pour prospecter</h2>
-    <p class="section-sub">Un outil pensé pour les équipes commerciales du solaire.</p>
-
-    <div class="cards">
-      <div class="card">
-        <div class="card-icon">🗺️</div>
-        <h3>Carte interactive</h3>
-        <p>Visualisez vos prospects sur une carte Leaflet avec clustering, filtres et pop-ups détaillées.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">☀️</div>
-        <h3>Potentiel solaire</h3>
-        <p>Chaque toit est scoré selon l'ensoleillement, la surface disponible et l'orientation.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">📋</div>
-        <h3>Gestion des leads</h3>
-        <p>Suivez le statut de chaque contact : à contacter, en cours, signé ou perdu.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">📊</div>
-        <h3>Statistiques</h3>
-        <p>Tableau de bord synthétique : pipeline, taux de conversion, puissance installée.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">🔍</div>
-        <h3>Filtres avancés</h3>
-        <p>Filtrez par zone géographique, puissance estimée, type de toit ou statut commercial.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">📤</div>
-        <h3>Export CSV</h3>
-        <p>Exportez votre sélection en un clic pour l'intégrer dans votre CRM ou tableur.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div class="cta-section">
-    <h2>Prêt à démarrer votre prospection ?</h2>
-    <p>Essayez la carte de démo directement dans votre navigateur, sans installation.</p>
+  Potentiel solaire, rentabilité, contact : chaque prospect qualifié 
+  avant le premier appel. Concentrez-vous sur les prospects qui valent le déplacement.
+  </p>
+  <div class="hero-actions">
     <a href="prospection/" class="btn-primary">
-      🚀 Accéder à la démo gratuite
+      🗺️ Lancer la carte interactive
     </a>
   </div>
+</section>
+
 
   <footer>
     © 2026 SolarDashboard —

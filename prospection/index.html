@@ -17,13 +17,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
+
+  <!-- Consentement RGPD + Clarity (chargé uniquement après accord) -->
+  <script src="../consent.js" defer></script>
 </head>
 <body>
 
   <!-- PASSWORD GATE -->
   <div class="gate" id="gate">
     <div class="gate-card">
-      <div class="gate-logo">☀️</div>
+      <img src="../assets/icon.png" class="gate-logo" alt="SolarDashboard" />
       <h2>SolarDashboard</h2>
       <p>Accès restreint — entrez le mot de passe pour continuer.</p>
       <input class="gate-input" id="gateInput" type="password"
@@ -39,7 +42,7 @@
     <a href="../" class="back-btn">← Accueil</a>
     <div class="topbar-sep">/</div>
     <div class="topbar-logo">
-      <div class="logo-icon">☀️</div>
+      <img src="../assets/icon.png" class="logo-icon" alt="" />
       SolarDashboard
     </div>
     <div class="topbar-sep">/</div>

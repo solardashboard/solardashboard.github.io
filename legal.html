@@ -26,7 +26,7 @@
     .back-btn { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.15s; }
     .back-btn:hover { color: var(--text); }
     .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1rem; }
-    .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--sun), var(--sun-dark)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+    .logo-icon { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; }
     .sep { color: var(--dark-3); }
 
     .page { max-width: 760px; margin: 0 auto; padding: 4rem 2rem 6rem; }
@@ -76,7 +76,7 @@
   <nav>
     <a href="./" class="back-btn">← Accueil</a>
     <span class="sep">/</span>
-    <div class="logo"><div class="logo-icon">☀️</div> SolarDashboard</div>
+    <div class="logo"><img src="assets/icon.png" class="logo-icon" alt="SolarDashboard" /> SolarDashboard</div>
     <span class="sep">/</span>
     <span style="font-size:0.9rem;color:var(--muted)">Mentions légales</span>
   </nav>
@@ -138,15 +138,31 @@
 
     <!-- 4. Données personnelles -->
     <div class="section">
-      <h2>4. Données personnelles et cookies</h2>
+      <h2>4. Données personnelles, cookies et mesure d'audience</h2>
       <p>
-        Ce site ne collecte aucune donnée personnelle et n'utilise pas de cookies de traçage.
         L'accès à l'interface de prospection est protégé par un mot de passe stocké uniquement
         en <em>sessionStorage</em> côté navigateur, sans transmission vers un serveur.
+        Les données de prospection chargées par l'utilisateur ne quittent pas le navigateur.
       </p>
+      <div class="card" style="margin:1rem 0 0.75rem">
+        <strong>Microsoft Clarity — mesure d'audience et enregistrement de session</strong>
+        Ce site utilise <strong>Microsoft Clarity</strong>, un outil d'analyse comportementale
+        fourni par Microsoft Corporation. Clarity enregistre les interactions des visiteurs
+        (mouvements de souris, clics, défilement, replays de session) afin d'améliorer l'ergonomie
+        du service. Ces données sont traitées par Microsoft et peuvent être transférées hors de l'UE
+        dans le cadre de garanties appropriées (clauses contractuelles types — article 46 du RGPD).
+        <br/><br/>
+        Clarity utilise des cookies et technologies similaires. Aucune donnée d'identification
+        directe (nom, email, données de prospection) n'est transmise à Microsoft.
+        <br/><br/>
+        Pour en savoir plus ou vous opposer à la collecte :
+        <a href="https://privacy.microsoft.com/fr-fr/privacystatement" target="_blank">Politique de confidentialité Microsoft</a> ·
+        <a href="https://clarity.microsoft.com/opt-out" target="_blank">Se désinscrire de Clarity</a>
+      </div>
       <p>
         Conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés,
-        toute question relative aux données personnelles peut être adressée à :
+        vous disposez d'un droit d'accès, de rectification et d'opposition sur vos données.
+        Toute demande peut être adressée à :
         <a href="mailto:gabriel.kasmi.services@gmail.com">gabriel.kasmi.services@gmail.com</a>.
       </p>
     </div>

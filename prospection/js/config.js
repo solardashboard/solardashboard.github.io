@@ -1,3 +1,12 @@
+// ── Clarity tracking helper ───────────────────────────────────────────────
+// Fires a named Clarity event + optional string tag.
+// Safe to call before Clarity loads (queued internally by the SDK).
+function _track(event, tagKey, tagValue) {
+  if (typeof clarity !== 'function') return;
+  clarity('event', event);
+  if (tagKey && tagValue !== undefined) clarity('set', tagKey, String(tagValue));
+}
+
 const CONFIG = {
   PASSWORD:       'solardashboard2026',
   TILE_URL:       'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',

@@ -35,5 +35,6 @@ function exportCSV() {
   a.download = `prospects_sauvegardés_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 
+  _track('csv_exporte', 'leads_exportes', toExport.length);
   showToast(`✅ ${toExport.length} prospect(s) exporté(s)`);
 }
