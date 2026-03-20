@@ -152,14 +152,40 @@
 
         <div class="detail-body">
 
-          <div class="detail-thumb-wrap" onclick="openLightbox()">
-            <img class="detail-thumb" id="dp-thumb" src="" alt="Vue aérienne IGN" />
-            <canvas class="thumb-canvas" id="dp-canvas"></canvas>
-            <div class="detail-thumb-zoom">🔍</div>
-          </div>
-          <div class="thumb-links">
-            <a class="thumb-link" id="dp-gmaps" href="#" target="_blank">📍 Google Maps</a>
-            <a class="thumb-link" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
+          <!-- Rangée de cartouches actions -->
+          <div class="detail-cards-row">
+
+            <!-- Cartouche Détails → ouvre le lightbox image + dimensionnement -->
+            <div class="detail-card" onclick="openLightbox()" role="button" tabindex="0">
+              <div class="detail-card-main">
+                <span class="detail-card-icon">🛰️</span>
+                <div class="detail-card-text">
+                  <div class="detail-card-title">Voir le détail</div>
+                  <div class="detail-card-sub">Photo IGN · Dimensionner</div>
+                </div>
+                <span class="detail-card-caret">›</span>
+              </div>
+              <div class="detail-card-links">
+                <a class="detail-card-link" id="dp-gmaps" href="#" target="_blank"
+                   onclick="event.stopPropagation()">📍 Maps</a>
+                <a class="detail-card-link" id="dp-streetview" href="#" target="_blank"
+                   onclick="event.stopPropagation()">🚶 Street View</a>
+              </div>
+            </div>
+
+            <!-- Cartouche Surface → affiche le polygone sur la carte -->
+            <div class="detail-card detail-card-surface" id="dp-card-polygon"
+                 onclick="toggleSurfacePolygon()" role="button" tabindex="0">
+              <div class="detail-card-main">
+                <span class="detail-card-icon">⬡</span>
+                <div class="detail-card-text">
+                  <div class="detail-card-title" id="dp-polygon-label">Afficher la surface</div>
+                  <div class="detail-card-sub">Polygone sur la carte</div>
+                </div>
+                <span class="detail-card-caret">›</span>
+              </div>
+            </div>
+
           </div>
 
           <div class="detail-section detail-section-eco">
@@ -207,7 +233,7 @@
         <div class="detail-footer">
           <button class="detail-btn primary"   id="dp-btn-phone">📞 Appeler</button>
           <button class="detail-btn secondary" id="dp-btn-email">✉️ Email</button>
-          <button class="detail-btn save-btn"  id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
+<button class="detail-btn save-btn"  id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
         </div>
       </div><!-- /detail-panel -->
 

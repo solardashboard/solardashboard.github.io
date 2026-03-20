@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dimensionnement solaire — SolarDashboard</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- EmailJS — remplacer PUBLIC_KEY ci-dessous -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sun: #f59e0b; --sun-dark: #d97706;
+      --dark: #0f172a; --dark-2: #1e293b; --dark-3: #334155;
+      --text: #f1f5f9; --muted: #94a3b8;
+      --green: #16a34a; --green-2: #4ade80; --green-bg: #052e16;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 1.25rem;
+      background: rgba(15,23,42,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { display: flex; align-items: center; gap: 0.45rem; font-weight: 800; font-size: 0.92rem; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; }
+    .topbar-sep { color: var(--dark-3); }
+    .topbar-title { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .topbar-right { margin-left: auto; }
+    .share-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted); font-size: 0.73rem; font-weight: 600;
+      padding: 0.28rem 0.7rem; border-radius: 6px; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .share-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .share-btn.copied { color: var(--green-2); border-color: var(--green); }
+
+    /* GRID */
+    main {
+      flex: 1; display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: auto auto;
+      gap: 1.25rem;
+      max-width: 840px; width: 100%;
+      margin: 0 auto; padding: 1.25rem 1rem;
+      align-items: start;
+    }
+    @media (max-width: 600px) { main { grid-template-columns: 1fr; } }
+
+    /* LEFT PANEL */
+    .left-col { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .photo-wrap {
+      position: relative; border-radius: 14px; overflow: hidden;
+      background: var(--dark-2); aspect-ratio: 1; border: 1px solid rgba(255,255,255,0.07);
+    }
+    .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-placeholder {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.4rem; color: var(--muted); font-size: 0.75rem; text-align: center;
+    }
+    .photo-placeholder span { font-size: 1.8rem; }
+    .photo-badge {
+      position: absolute; bottom: 9px; left: 9px;
+      background: rgba(15,23,42,0.82); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px; padding: 0.26rem 0.5rem;
+      font-size: 0.66rem; font-weight: 700; color: var(--text); white-space: nowrap;
+    }
+
+    /* Centrale info card */
+    .centrale-card {
+      background: var(--dark-2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 0.85rem 1rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .centrale-kwc {
+      font-size: 0.8rem; color: var(--muted); line-height: 1.5;
+    }
+    .centrale-kwc strong { color: var(--text); font-size: 1.25rem; font-weight: 800; }
+    .centrale-prod {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.15);
+      border-radius: 8px; padding: 0.45rem 0.7rem;
+      font-size: 0.73rem;
+    }
+    .centrale-prod-label { color: var(--muted); }
+    .centrale-prod-val { font-weight: 800; color: var(--sun); }
+
+    /* RIGHT PANEL */
+    .right-col { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 0.8rem; }
+
+    .right-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+    /* Inputs */
+    .inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .field { display: flex; flex-direction: column; gap: 0.22rem; }
+    .field label { font-size: 0.68rem; color: var(--muted); font-weight: 500; }
+    .input-wrap { display: flex; align-items: center; }
+    .input-wrap input[type="number"] {
+      flex: 1; min-width: 0;
+      background: var(--dark-3); border: 1px solid rgba(255,255,255,0.08); border-right: none;
+      border-radius: 6px 0 0 6px; color: var(--text); font-size: 0.83rem; font-family: inherit;
+      padding: 0.4rem 0.55rem; outline: none; transition: border-color 0.15s;
+    }
+    .input-wrap input[type="number"]:focus { border-color: rgba(245,158,11,0.4); }
+    .input-unit {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 6px 6px 0; padding: 0.4rem 0.5rem;
+      font-size: 0.67rem; color: var(--muted); white-space: nowrap;
+    }
+
+    /* Sliders */
+    .sliders { display: flex; flex-direction: column; gap: 0.55rem; }
+    .slider-field { display: flex; flex-direction: column; gap: 0.18rem; }
+    .slider-field label { font-size: 0.67rem; color: var(--muted); font-weight: 500; }
+    .slider-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .slider-wrap input[type="range"] { flex: 1; accent-color: var(--sun); cursor: pointer; }
+    .slider-val { min-width: 40px; text-align: right; font-size: 0.75rem; font-weight: 700; color: var(--sun); }
+
+    /* KPIs */
+    .kpi-hero {
+      background: var(--green-bg); border: 1px solid rgba(22,163,74,0.4);
+      border-radius: 12px; padding: 0.85rem 1rem;
+    }
+    .kpi-hero-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-2); margin-bottom: 0.1rem; }
+    .kpi-hero-val {
+      font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; color: var(--green-2); line-height: 1;
+    }
+    .kpi-hero-val.flash { animation: flash-green 0.35s ease; }
+    @keyframes flash-green { 0% { color: #fff; } 100% { color: var(--green-2); } }
+    .kpi-hero-sub { font-size: 0.68rem; color: #86efac; margin-top: 0.28rem; }
+
+    .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    .kpi {
+      background: var(--dark-2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 0.65rem 0.8rem;
+    }
+    .kpi-label { font-size: 0.61rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .kpi-val { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.18rem; }
+    .kpi-eco    .kpi-val { color: var(--sun); }
+    .kpi-invest .kpi-val { color: var(--text); }
+    .kpi-sub { font-size: 0.61rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* CTA — prend les 2 colonnes */
+    .cta-col {
+      grid-column: 1 / -1; grid-row: 2;
+      background: linear-gradient(135deg, var(--green-bg), rgba(22,163,74,0.18));
+      border: 1px solid rgba(22,163,74,0.32);
+      border-radius: 14px; padding: 1.1rem 1.3rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .cta-left {}
+    .cta-title { font-size: 1rem; font-weight: 800; }
+    .cta-sub { font-size: 0.72rem; color: var(--green-2); margin-top: 0.2rem; }
+    .cta-proof { font-size: 0.65rem; color: var(--muted); margin-top: 0.4rem; }
+    .cta-btn {
+      background: linear-gradient(135deg, var(--green), #15803d);
+      color: #fff; font-weight: 700; font-size: 0.85rem;
+      padding: 0.7rem 1.3rem; border-radius: 9px;
+      border: none; cursor: pointer; font-family: inherit;
+      white-space: nowrap; flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(22,163,74,0.3);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cta-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .cta-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .cta-btn.sent { background: linear-gradient(135deg,#065f46,#047857); }
+    .cta-spinner {
+      width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 0.85rem 1.25rem; text-align: center;
+      color: var(--muted); font-size: 0.7rem;
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+
+    .empty-state { grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--muted); }
+    .empty-state span { font-size: 2rem; display: block; margin-bottom: 0.6rem; }
+  </style>
+
+  <script src="../prospection/js/naf.js"></script>
+  <script src="../consent.js" defer></script>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="../" class="logo">
+      <img src="../assets/icon.png" class="logo-icon" alt="SolarDashboard" />
+      SolarDashboard
+    </a>
+    <div class="topbar-sep">/</div>
+    <div class="topbar-title">Dimensionnement solaire</div>
+    <div class="topbar-right">
+      <button class="share-btn" id="shareBtn" onclick="copyLink()">🔗 Copier le lien</button>
+    </div>
+  </div>
+
+  <main id="main"></main>
+
+  <footer>
+    Simulateur généré par <strong>SolarDashboard</strong> — résultats indicatifs ·
+    <a href="../legal.html">Mentions légales</a>
+  </footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// ⚙️  CONFIG EmailJS — à remplir après création du compte sur emailjs.com
+// ─────────────────────────────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY  = 'VOTRE_PUBLIC_KEY';   // Account > API Keys
+const EMAILJS_SERVICE_ID  = 'VOTRE_SERVICE_ID';   // Email Services > Service ID
+const EMAILJS_TEMPLATE_ID = 'VOTRE_TEMPLATE_ID';  // Email Templates > Template ID
+const DEST_EMAIL          = 'gabkasmi@gmail.com'; // adresse qui reçoit les leads
+// ─────────────────────────────────────────────────────────────────────────
+
+const IGN_WMS      = 'https://data.geopf.fr/wms-r';
+const IGN_LAYER    = 'ORTHOIMAGERY.ORTHOPHOTOS';
+const DEGR         = 0.005;
+const CA_PER_KWC   = 1.1;
+const PROD_PER_KWC = 1.1;
+
+const P = new URLSearchParams(window.location.search);
+const pSurface   = parseFloat(P.get('surface'))   || 0;
+const pNaf       = P.get('secteur') || '';
+const pAutoconso = P.get('autoconso') !== null
+  ? parseFloat(P.get('autoconso'))
+  : (pNaf ? nafToAutoconso(pNaf) : 0.60);
+const pConso = parseFloat(P.get('conso')) || 200;  // MWh/an, défaut 200
+const pLat  = parseFloat(P.get('lat')) || null;
+const pLon  = parseFloat(P.get('lon')) || null;
+const pNom  = P.get('nom') || null;
+
+// Arrondi commercial de la puissance
+function roundKwc(kwc) {
+  if (kwc >= 500) return Math.round(kwc / 100) * 100;
+  return Math.round(kwc / 10) * 10;
+}
+
+const KWC_RAW     = pSurface > 0 ? Math.round(pSurface * 0.8 / 6.5 * 10) / 10 : 0;
+const KWC         = roundKwc(KWC_RAW);            // arrondi pour affichage
+const PROD_MWH    = Math.round(KWC * PROD_PER_KWC);
+const initAutoPct = Math.round(pAutoconso * 100);
+
+function ignUrl(lat, lon, area, px) {
+  const buf = Math.max(0.0007, Math.sqrt(Math.max(area, 100)) / 75000);
+  let [minLat, maxLat, minLon, maxLon] = [lat-buf, lat+buf, lon-buf, lon+buf];
+  const dLat = maxLat-minLat, dLon = maxLon-minLon;
+  if (dLat > dLon) { const d=(dLat-dLon)/2; minLon-=d; maxLon+=d; }
+  else             { const d=(dLon-dLat)/2; minLat-=d; maxLat+=d; }
+  return `${IGN_WMS}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap`
+       + `&LAYERS=${IGN_LAYER}&STYLES=&FORMAT=image/jpeg`
+       + `&CRS=EPSG:4326&BBOX=${minLat},${minLon},${maxLat},${maxLon}`
+       + `&WIDTH=${px}&HEIGHT=${px}`;
+}
+
+function fmt(k, suf) {
+  const s = suf||'';
+  if (k >= 1000) return (k/1000).toLocaleString('fr',{minimumFractionDigits:1,maximumFractionDigits:1})+' M€'+s;
+  return Math.round(k).toLocaleString('fr')+' k€'+s;
+}
+
+// Animation flash sur le payback
+let _lastPayback = null;
+function animatePayback(val) {
+  const el = document.getElementById('rPayback');
+  if (!el || _lastPayback === val) return;
+  _lastPayback = val;
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  el.textContent = val ? `${val} ans` : '> 50 ans';
+}
+
+// Calcul principal
+function calc() {
+  const consoMwh  = parseFloat(document.getElementById('fConso').value)     ?? 0;
+  const prixElec  = parseFloat(document.getElementById('fPrixElec').value)  || 0;
+  const autoconso = parseFloat(document.getElementById('fAutoconso').value) / 100;
+  const hausse    = parseFloat(document.getElementById('fHausse').value)    / 100;
+
+  document.getElementById('fAutoconsoVal').textContent = Math.round(autoconso*100)+'%';
+  document.getElementById('fHausseVal').textContent    = (hausse*100).toFixed(1).replace('.',',')+' %';
+
+  if (KWC <= 0 || prixElec <= 0) {
+    animatePayback(null);
+    ['rEco','rCA'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+
+  const ca_k    = KWC * CA_PER_KWC;
+  const investE = ca_k * 1000;
+  const prodMWh = KWC * PROD_PER_KWC;
+
+  // Payback : production × taux_autoconso × prix_elec, cumulé avec dégradation + hausse
+  // Le taux est le slider directement (modèle Python — pas de plafonnement par conso)
+  let cumul = 0, payback = null;
+  for (let t = 0; t < 50; t++) {
+    cumul += prodMWh * Math.pow(1-DEGR,t) * autoconso * prixElec * Math.pow(1+hausse,t);
+    if (cumul >= investE) { payback = t+1; break; }
+  }
+
+  animatePayback(payback);
+  document.getElementById('rEco').textContent = fmt(prodMWh * autoconso * prixElec / 1000, '/an');
+  document.getElementById('rCA').textContent  = fmt(ca_k);
+}
+
+// Envoi email silencieux via EmailJS
+async function sendLead() {
+  const btn = document.getElementById('ctaBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="cta-spinner"></span> Envoi…`;
+
+  const prixElec  = document.getElementById('fPrixElec').value || '160';
+  const autoconso = document.getElementById('fAutoconso').value + '%';
+  const hausse    = document.getElementById('fHausse').value + '%';
+  const payback   = document.getElementById('rPayback').textContent;
+  const eco       = document.getElementById('rEco').textContent;
+  const invest    = document.getElementById('rCA').textContent;
+  const nom       = pNom ? decodeURIComponent(pNom) : 'Non renseigné';
+
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:    DEST_EMAIL,
+      lead_nom:    nom,
+      lead_naf:    pNaf || '—',
+      surface:     pSurface ? Math.round(pSurface).toLocaleString('fr') + ' m²' : '—',
+      puissance:   KWC + ' kWc',
+      production:  PROD_MWH + ' MWh/an',
+      prix_elec:   prixElec + ' €/MWh',
+      autoconso,
+      hausse,
+      payback,
+      eco_an1:     eco,
+      investissement: invest,
+      lat:         pLat || '—',
+      lon:         pLon || '—',
+      url:         window.location.href,
+    });
+    btn.classList.add('sent');
+    btn.innerHTML = '✅ Demande envoyée !';
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    btn.disabled = false;
+    btn.innerHTML = '⚠️ Erreur — réessayer';
+    setTimeout(() => { btn.innerHTML = 'Obtenir une étude gratuite →'; }, 3000);
+  }
+}
+
+function copyLink() {
+  const u = new URL(window.location.href);
+  if (pSurface) u.searchParams.set('surface', pSurface);
+  u.searchParams.set('autoconso', (parseFloat(document.getElementById('fAutoconso').value)/100).toFixed(2));
+  if (pNaf) u.searchParams.set('secteur', pNaf);
+  if (pLat) u.searchParams.set('lat', pLat);
+  if (pLon) u.searchParams.set('lon', pLon);
+  if (pNom) u.searchParams.set('nom', pNom);
+  navigator.clipboard.writeText(u.toString()).then(() => {
+    const btn = document.getElementById('shareBtn');
+    btn.textContent = '✅ Copié !';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '🔗 Copier le lien'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function render() {
+  const main = document.getElementById('main');
+  if (!pLat || !pLon) {
+    main.innerHTML = `<div class="empty-state">
+      <span>🔍</span>
+      <p>Paramètres manquants.<br/>
+      <code style="font-size:0.7rem">?surface=9407&secteur=28.25Z&autoconso=0.75&lat=44.706&lon=-0.582</code></p>
+    </div>`;
+    return;
+  }
+
+  const photoUrl = ignUrl(pLat, pLon, pSurface, 520);
+  const nom      = pNom ? decodeURIComponent(pNom) : null;
+  const badge    = pSurface ? `📐 ${Math.round(pSurface).toLocaleString('fr')} m²` : null;
+
+  main.innerHTML = `
+
+    <!-- ── COLONNE GAUCHE : toiture ── -->
+    <div class="left-col">
+      <div class="photo-wrap">
+        <img src="${photoUrl}" alt="Vue aérienne"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="photo-placeholder"><span>🛰️</span><p>Vue satellite indisponible</p></div>
+        ${badge ? `<div class="photo-badge">${badge}</div>` : ''}
+      </div>
+
+      <div class="centrale-card">
+        <div class="centrale-kwc">
+          Vous pourriez installer une centrale de<br/>
+          <strong>${KWC.toLocaleString('fr')} kWc</strong>
+        </div>
+        <div class="centrale-prod">
+          <span class="centrale-prod-label">☀️ Production estimée</span>
+          <span class="centrale-prod-val">${PROD_MWH.toLocaleString('fr')} MWh/an</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COLONNE DROITE : résultats ── -->
+    <div class="right-col">
+      <div class="right-title">Affiner les résultats</div>
+
+      <div class="inputs-row">
+        <div class="field">
+          <label>Votre consommation annuelle</label>
+          <div class="input-wrap">
+            <input type="number" id="fConso" min="0" value="${pConso}" oninput="calc()" />
+            <span class="input-unit">MWh/an</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Votre prix de l'électricité</label>
+          <div class="input-wrap">
+            <input type="number" id="fPrixElec" min="0" value="160" oninput="calc()" />
+            <span class="input-unit">€/MWh</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sliders">
+        <div class="slider-field">
+          <label>Taux d'autoconsommation</label>
+          <div class="slider-wrap">
+            <input type="range" id="fAutoconso" min="0" max="100" value="${initAutoPct}" oninput="calc()" />
+            <span class="slider-val" id="fAutoconsoVal">${initAutoPct}%</span>
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Hausse annuelle du prix de l'électricité</label>
+          <div class="slider-wrap">
+            <input type="range" id="fHausse" min="0" max="10" step="0.5" value="3" oninput="calc()" />
+            <span class="slider-val" id="fHausseVal">3,0 %</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-hero">
+        <div class="kpi-hero-label">Retour sur investissement</div>
+        <div class="kpi-hero-val" id="rPayback">—</div>
+        <div class="kpi-hero-sub">payback estimé — 25 ans de durée de vie</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi kpi-eco">
+          <div class="kpi-label">Économie an 1</div>
+          <div class="kpi-val" id="rEco">—</div>
+          <div class="kpi-sub">électricité autoconsommée</div>
+        </div>
+        <div class="kpi kpi-invest">
+          <div class="kpi-label">Investissement</div>
+          <div class="kpi-val" id="rCA">—</div>
+          <div class="kpi-sub">coût installation estimé</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CTA pleine largeur ── -->
+    <div class="cta-col">
+      <div class="cta-left">
+        <div class="cta-title">Ces résultats vous intéressent ?</div>
+        <div class="cta-sub">Un expert vous rappelle sous 48h pour affiner l'étude — sans engagement</div>
+        <div class="cta-proof">☑ Gratuit · ☑ Sans engagement · ☑ Installateur certifié RGE</div>
+      </div>
+      <button class="cta-btn" id="ctaBtn" onclick="sendLead()">
+        Obtenir une étude gratuite →
+      </button>
+    </div>
+
+  `;
+
+  calc();
+}
+
+render();
+</script>
+</body>
+</html>

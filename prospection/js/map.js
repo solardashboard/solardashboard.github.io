@@ -3,15 +3,53 @@
 let map;
 let cluster;
 const markerMap = {};  // id → Leaflet marker
+let polygonLayer = null; // couche polygone active sur la carte
 
 function initMap() {
   map = L.map('map', { zoomControl: true })
           .setView(CONFIG.DEFAULT_CENTER, CONFIG.DEFAULT_ZOOM);
 
-  L.tileLayer(CONFIG.TILE_URL, {
-    attribution: CONFIG.TILE_ATTR,
+  // ── Basemaps ────────────────────────────────────────────────────────────
+  const cartoLight = L.tileLayer(CONFIG.TILE_CARTO_URL, {
+    attribution: CONFIG.TILE_CARTO_ATTR,
     maxZoom: CONFIG.MAX_ZOOM,
-  }).addTo(map);
+    subdomains: 'abcd',
+  });
+
+  const esriSat = L.tileLayer(CONFIG.TILE_SAT_URL, {
+    attribution: CONFIG.TILE_SAT_ATTR,
+    maxZoom: CONFIG.MAX_ZOOM,
+  });
+
+  // Overlay routes + labels + admin (transparent, se superpose au sat)
+  const esriRef = L.tileLayer(CONFIG.TILE_REF_URL, {
+    attribution: CONFIG.TILE_REF_ATTR,
+    maxZoom: CONFIG.MAX_ZOOM,
+    opacity: 0.85,
+  });
+
+  // Satellite actif par défaut + overlay routes/admin
+  esriSat.addTo(map);
+  esriRef.addTo(map);
+
+  // ── Contrôle de couches ──────────────────────────────────────────────────
+  const baseMaps = {
+    '🛰️ Satellite': esriSat,
+    '🗺️ Plan (clair)': cartoLight,
+  };
+  const overlays = {
+    '🛣️ Routes & admin': esriRef,
+  };
+  L.control.layers(baseMaps, overlays, { position: 'topleft', collapsed: true }).addTo(map);
+
+  // Masquer automatiquement l'overlay routes si on passe en mode Plan
+  map.on('baselayerchange', (e) => {
+    if (e.name === '🗺️ Plan (clair)') {
+      if (map.hasLayer(esriRef)) map.removeLayer(esriRef);
+    } else {
+      if (!map.hasLayer(esriRef)) esriRef.addTo(map);
+    }
+  });
 
   cluster = L.markerClusterGroup({
     maxClusterRadius: 50,
@@ -90,4 +128,36 @@ function syncMapToFilter(visibleIds) {
     if (show && !cluster.hasLayer(m)) cluster.addLayer(m);
     else if (!show && cluster.hasLayer(m)) cluster.removeLayer(m);
   });
+}
+
+// ── Polygon surface ────────────────────────────────────────────────────────
+
+function clearPolygon() {
+  if (polygonLayer) { map.removeLayer(polygonLayer); polygonLayer = null; }
+  const card  = document.getElementById('dp-card-polygon');
+  const label = document.getElementById('dp-polygon-label');
+  if (card)  card.classList.remove('active');
+  if (label) label.textContent = 'Afficher la surface';
+}
+
+function togglePolygon(lead) {
+  if (polygonLayer) { clearPolygon(); return; }
+  if (!lead || !lead.polygonRing || lead.polygonRing.length < 3) return;
+
+  // GeoJSON ring = [lng, lat] → Leaflet veut [lat, lng]
+  const latLngs = lead.polygonRing.map(([lng, lat]) => [lat, lng]);
+  polygonLayer = L.polygon(latLngs, {
+    color:       '#f59e0b',
+    weight:      2.5,
+    opacity:     1,
+    fillColor:   '#f59e0b',
+    fillOpacity: 0.22,
+  }).addTo(map);
+
+  map.fitBounds(polygonLayer.getBounds(), { padding: [80, 80], maxZoom: 19 });
+
+  const card  = document.getElementById('dp-card-polygon');
+  const label = document.getElementById('dp-polygon-label');
+  if (card)  card.classList.add('active');
+  if (label) label.textContent = 'Masquer la surface';
 }

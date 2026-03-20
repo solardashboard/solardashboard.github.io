@@ -60,6 +60,7 @@ function drawPolygon(canvasId, polygonRing, lat, lng, polygonBbox, px) {
 }
 
 function selectLead(id) {
+  clearPolygon(); // retirer le polygone d'un éventuel prospect précédent
   State.selectedId = id;
   const l = State.leads.find(l => l.id === id);
   if (!l) return;
@@ -103,9 +104,7 @@ function selectLead(id) {
   document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
   document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
 
-  // Thumbnail + polygon overlay + map links
-  document.getElementById('dp-thumb').src       = ignThumbnailUrl(l.lat, l.lng, 300, l.polygonBbox);
-  drawPolygon('dp-canvas', l.polygonRing, l.lat, l.lng, l.polygonBbox, 300);
+  // Liens cartouche Détails
   document.getElementById('dp-gmaps').href      = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
   document.getElementById('dp-streetview').href = `https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}`;
 
@@ -116,10 +115,16 @@ function selectLead(id) {
 }
 
 function closeDetail() {
+  clearPolygon();
   State.selectedId = null;
   document.getElementById('detailPanel').classList.remove('visible');
   refreshMarkers();
   renderList();
+}
+
+function toggleSurfacePolygon() {
+  const l = State.leads.find(x => x.id === State.selectedId);
+  if (l) togglePolygon(l);
 }
 
 // ── Save ──────────────────────────────────────────────────────────────────

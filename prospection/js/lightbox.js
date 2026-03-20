@@ -17,11 +17,13 @@ function openLightbox() {
   ].filter(Boolean).join(' · ');
   document.getElementById('lb-score').textContent = `🏆 #${l.rank}`;
 
-  // Contact links
+  // Contact links + liens géo
   const contacts = [];
   if (l.phone)    contacts.push(`<a href="tel:${l.phone}" class="lb-contact-link">📞 ${l.phone}</a>`);
   if (l.email)    contacts.push(`<a href="mailto:${l.email}" class="lb-contact-link">✉️ ${l.email}</a>`);
-  if (l.linkedin) contacts.push(`<a href="${l.linkedin}" target="_blank" class="lb-contact-link">in Profil LinkedIn</a>`);
+  if (l.linkedin) contacts.push(`<a href="${l.linkedin}" target="_blank" class="lb-contact-link">in LinkedIn</a>`);
+  contacts.push(`<a href="https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}" target="_blank" class="lb-contact-link">📍 Google Maps</a>`);
+  contacts.push(`<a href="https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}" target="_blank" class="lb-contact-link">🚶 Street View</a>`);
   document.getElementById('lb-contacts').innerHTML = contacts.join('');
 
   // Pre-fill sizer with lead data
