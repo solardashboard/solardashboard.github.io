@@ -152,40 +152,22 @@
 
         <div class="detail-body">
 
-          <!-- Rangée de cartouches actions -->
-          <div class="detail-cards-row">
-
-            <!-- Cartouche Détails → ouvre le lightbox image + dimensionnement -->
-            <div class="detail-card" onclick="openLightbox()" role="button" tabindex="0">
-              <div class="detail-card-main">
-                <span class="detail-card-icon">🛰️</span>
-                <div class="detail-card-text">
-                  <div class="detail-card-title">Voir le détail</div>
-                  <div class="detail-card-sub">Photo IGN · Dimensionner</div>
-                </div>
-                <span class="detail-card-caret">›</span>
-              </div>
-              <div class="detail-card-links">
-                <a class="detail-card-link" id="dp-gmaps" href="#" target="_blank"
-                   onclick="event.stopPropagation()">📍 Maps</a>
-                <a class="detail-card-link" id="dp-streetview" href="#" target="_blank"
-                   onclick="event.stopPropagation()">🚶 Street View</a>
-              </div>
+          <!-- Bouton principal : polygone surface -->
+          <div class="detail-card detail-card-primary" id="dp-card-polygon"
+               onclick="toggleSurfacePolygon()" role="button" tabindex="0">
+            <span class="detail-card-icon">⬡</span>
+            <div class="detail-card-text">
+              <div class="detail-card-title" id="dp-polygon-label">Afficher la surface</div>
+              <div class="detail-card-sub">Affiche le polygone sur la carte satellite</div>
             </div>
+            <span class="detail-card-caret">›</span>
+          </div>
 
-            <!-- Cartouche Surface → affiche le polygone sur la carte -->
-            <div class="detail-card detail-card-surface" id="dp-card-polygon"
-                 onclick="toggleSurfacePolygon()" role="button" tabindex="0">
-              <div class="detail-card-main">
-                <span class="detail-card-icon">⬡</span>
-                <div class="detail-card-text">
-                  <div class="detail-card-title" id="dp-polygon-label">Afficher la surface</div>
-                  <div class="detail-card-sub">Polygone sur la carte</div>
-                </div>
-                <span class="detail-card-caret">›</span>
-              </div>
-            </div>
-
+          <!-- Actions secondaires -->
+          <div class="detail-actions-row">
+            <a class="detail-action" onclick="openLightbox(true); return false;" href="#">⚡ Dimensionner</a>
+            <a class="detail-action" id="dp-gmaps" href="#" target="_blank">📍 Maps</a>
+            <a class="detail-action" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
           </div>
 
           <div class="detail-section detail-section-eco">
@@ -312,7 +294,7 @@
             <input type="range" class="sizer-range" id="sizerHausse" min="0" max="10" value="3" step="0.5" oninput="calcSizing()" />
           </div>
 
-          <div class="sizer-results">
+<div class="sizer-results">
             <div class="sizer-result-title">Résultats</div>
             <div class="sizer-kpi-row">
               <div class="sizer-kpi">

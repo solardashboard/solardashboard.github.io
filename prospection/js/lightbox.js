@@ -1,6 +1,6 @@
 // IGN orthophoto lightbox + sizing tool.
 
-function openLightbox() {
+function openLightbox(openSizer = false) {
   const l = State.leads.find(x => x.id === State.selectedId);
   if (!l) return;
 
@@ -39,9 +39,9 @@ function openLightbox() {
   document.getElementById('sizerHausse').value          = 3;
   document.getElementById('sizerHausseVal').textContent = '3,0%';
 
-  // Close sizer panel on each open
-  document.getElementById('lbInner').classList.remove('sizer-open');
-  document.getElementById('lbSizerBtn').classList.remove('active');
+  // Sizer panel : ouvert si demandé, fermé sinon
+  document.getElementById('lbInner').classList.toggle('sizer-open', openSizer);
+  document.getElementById('lbSizerBtn').classList.toggle('active', openSizer);
   calcSizing();
 
   _track('lightbox_ouverte');
@@ -106,8 +106,8 @@ function calcSizing(source) {
   }
 
   // CA : 1 100 €/kWc (formule du modèle)
-  const ca_k    = kwc * 1.1;           // k€
-  const investE = ca_k * 1000;         // €
+  const ca_k       = kwc * 1.1;        // k€
+  const investE    = ca_k * 1000;      // €
 
   // Production : proportionnelle à la puissance saisie
   // On utilise la production réelle du site si disponible, sinon 1 100 kWh/kWc/an
@@ -138,4 +138,5 @@ function calcSizing(source) {
   document.getElementById('srPayback').textContent = payback ? `${payback} ans` : '> 50 ans';
   document.getElementById('srProd').textContent    = `${Math.round(prodMWh).toLocaleString('fr')} MWh/an`;
   document.getElementById('srEco').textContent     = formatKeuros(ecoAn1 / 1000, '/an');
+
 }
