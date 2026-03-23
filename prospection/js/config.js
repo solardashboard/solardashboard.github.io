@@ -7,8 +7,37 @@ function _track(event, tagKey, tagValue) {
   if (tagKey && tagValue !== undefined) clarity('set', tagKey, String(tagValue));
 }
 
+// ── Clients ─────────────────────────────────────────────────────────────────
+// Chaque entrée = un mot de passe → config client.
+// accentColor : hex sans #, utilisé dans l'UI et dans la proposition .docx.
+// logoUrl     : URL publique du logo (PNG/SVG), null si non disponible.
+const CLIENTS = {
+  'solardashboard2026': {
+    id:          'admin',
+    name:        'SolarDashboard',
+    accentColor: 'F59E0B',   // amber par défaut
+    logoUrl:     null,
+    website:     null,
+  },
+  'demovoltare': {
+    id:          'voltare',
+    name:        'Voltare',
+    accentColor: '16A34A',   // vert — à affiner avec leur charte
+    logoUrl:     'https://www.voltare.fr/wp-content/uploads/2022/04/logo-voltare.png',
+    website:     'https://www.voltare.fr',
+  },
+  'demosolarock': {
+    id:          'solarock',
+    name:        'SolaRock',
+    accentColor: 'F59E0B',   // amber — à personnaliser
+    logoUrl:     null,
+    website:     null,
+  },
+};
+
 const CONFIG = {
-  PASSWORD:       'solardashboard2026',
+  // PASSWORD legacy supprimé — voir CLIENTS ci-dessus
+  PASSWORD:       null, // conservé pour compatibilité, non utilisé
   // Basemaps
   TILE_CARTO_URL:  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   TILE_CARTO_ATTR: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',

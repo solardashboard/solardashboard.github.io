@@ -1,17 +1,48 @@
 // Entry point: password gate, drag & drop, and app initialisation.
 
+// ── Client actif ────────────────────────────────────────────────────────────
+// Exposé globalement pour proposal.js et les autres modules.
+window.CLIENT = null;
+
+function applyClient(client) {
+  window.CLIENT = client;
+
+  // Couleur accent : surcharge la CSS variable --sun
+  const hex = '#' + client.accentColor;
+  document.documentElement.style.setProperty('--sun', hex);
+  // Calcule une variante sombre (~15% plus sombre) pour --sun-dark
+  document.documentElement.style.setProperty('--sun-dark', hex);
+
+  // Topbar : badge client
+  const badge = document.getElementById('clientBadge');
+  if (badge) {
+    badge.textContent = client.name;
+    badge.style.display = 'inline-flex';
+    badge.style.color   = hex;
+  }
+}
+
 // ── Password gate ──────────────────────────────────────────────────────────
 (function () {
-  if (sessionStorage.getItem('sd_auth') === '1') {
-    document.getElementById('gate').classList.add('hidden');
+  const savedClient = sessionStorage.getItem('sd_client');
+  if (savedClient) {
+    const client = CLIENTS[savedClient];
+    if (client) {
+      applyClient(client);
+      document.getElementById('gate').classList.add('hidden');
+    }
   }
 })();
 
 function checkPassword() {
-  const inp = document.getElementById('gateInput');
-  const err = document.getElementById('gateError');
-  if (inp.value === CONFIG.PASSWORD) {
-    sessionStorage.setItem('sd_auth', '1');
+  const inp    = document.getElementById('gateInput');
+  const err    = document.getElementById('gateError');
+  const pwd    = inp.value.trim();
+  const client = CLIENTS[pwd];
+
+  if (client) {
+    sessionStorage.setItem('sd_client', pwd);
+    applyClient(client);
     document.getElementById('gate').classList.add('hidden');
   } else {
     err.textContent = 'Mot de passe incorrect.';
