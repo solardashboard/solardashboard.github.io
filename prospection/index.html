@@ -156,20 +156,21 @@
 
         <div class="detail-body">
 
-          <!-- Bouton principal : polygone surface -->
-          <div class="detail-card detail-card-primary" id="dp-card-polygon"
-               onclick="toggleSurfacePolygon()" role="button" tabindex="0">
-            <span class="detail-card-icon">⬡</span>
+          <!-- Bouton principal : dimensionnement -->
+          <div class="detail-card detail-card-primary"
+               onclick="openLightbox(true)" role="button" tabindex="0">
+            <span class="detail-card-icon">⚡</span>
             <div class="detail-card-text">
-              <div class="detail-card-title" id="dp-polygon-label">Afficher la surface</div>
-              <div class="detail-card-sub">Affiche le polygone sur la carte satellite</div>
+              <div class="detail-card-title">Dimensionner</div>
+              <div class="detail-card-sub">Calcul chantier, payback et proposition</div>
             </div>
             <span class="detail-card-caret">›</span>
           </div>
 
           <!-- Actions secondaires -->
           <div class="detail-actions-row">
-            <a class="detail-action" onclick="openLightbox(true); return false;" href="#">⚡ Dimensionner</a>
+            <a class="detail-action" id="dp-card-polygon"
+               onclick="toggleSurfacePolygon(); return false;" href="#">⬡ <span id="dp-polygon-label">Polygone</span></a>
             <a class="detail-action" id="dp-gmaps" href="#" target="_blank">📍 Maps</a>
             <a class="detail-action" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
           </div>

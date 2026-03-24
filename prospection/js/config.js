@@ -39,8 +39,8 @@ const CONFIG = {
   // Basemaps
   TILE_CARTO_URL:  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   TILE_CARTO_ATTR: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
-  TILE_SAT_URL:    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  TILE_SAT_ATTR:   '© <a href="https://www.esri.com/">Esri</a> & GIS community',
+  TILE_SAT_URL:    'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&STYLE=normal&FORMAT=image/jpeg',
+  TILE_SAT_ATTR:   '© <a href="https://www.ign.fr/">IGN</a> — Géoportail France',
   TILE_REF_URL:    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
   TILE_REF_ATTR:   '© <a href="https://www.esri.com/">Esri</a> & GIS community',
   MAX_ZOOM:        19,

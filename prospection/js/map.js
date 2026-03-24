@@ -137,7 +137,7 @@ function clearPolygon() {
   const card  = document.getElementById('dp-card-polygon');
   const label = document.getElementById('dp-polygon-label');
   if (card)  card.classList.remove('active');
-  if (label) label.textContent = 'Afficher la surface';
+  if (label) label.textContent = 'Polygone';
 }
 
 function togglePolygon(lead) {
@@ -159,5 +159,5 @@ function togglePolygon(lead) {
   const card  = document.getElementById('dp-card-polygon');
   const label = document.getElementById('dp-polygon-label');
   if (card)  card.classList.add('active');
-  if (label) label.textContent = 'Masquer la surface';
+  if (label) label.textContent = 'Masquer';
 }
