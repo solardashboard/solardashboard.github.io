@@ -1,5 +1,5 @@
 // proposal.js — génère un .docx de proposition commerciale depuis le sizer
-// Dépend de : docx (CDN UMD), State, calcSizing logic
+// Dépend de : docx (bundlé localement via js/docx.iife.js), State
 
 // ── Helpers client ──────────────────────────────────────────────────────────
 
@@ -13,6 +13,169 @@ function _kpiBackground(hex) {
     const mix = (c) => Math.round(c * 0.12 + 255 * 0.88).toString(16).padStart(2,'0');
     return mix(r) + mix(g) + mix(b);
   } catch { return 'FEF9EE'; }
+}
+
+// ── Graphe break-even ────────────────────────────────────────────────────────
+
+function _hexToRGB(hex) {
+  return {
+    r: parseInt(hex.slice(0, 2), 16),
+    g: parseInt(hex.slice(2, 4), 16),
+    b: parseInt(hex.slice(4, 6), 16),
+  };
+}
+
+async function _drawBreakevenChart(ctx, accentHex) {
+  const W = 840, H = 390;
+  const PAD = { top: 54, right: 46, bottom: 64, left: 78 };
+  const CW = W - PAD.left - PAD.right;
+  const CH = H - PAD.top - PAD.bottom;
+
+  // ── Données ────────────────────────────────────────────────────────────────
+  const DEGR    = 0.005;
+  const nYears  = 25;
+  const autoEff = ctx.autoconsoEff / 100;
+
+  // Économies annuelles cumulées
+  const cumSav = [0];
+  for (let t = 1; t <= nYears; t++) {
+    const save = ctx.prodMWh * Math.pow(1 - DEGR, t - 1) * autoEff
+               * ctx.prixElec * Math.pow(1 + ctx.hausse, t - 1);
+    cumSav.push(cumSav[t - 1] + save);
+  }
+
+  const investE = ctx.investE;
+  const pb      = ctx.payback;
+  const maxVal  = Math.max(cumSav[nYears], investE) * 1.12;
+  const baseY   = PAD.top + CH;
+  const toY     = (v) => PAD.top + CH * (1 - Math.min(v, maxVal) / maxVal);
+
+  // Géométrie des barres (1 par an)
+  const slotW = CW / nYears;
+  const barW  = Math.max(slotW * 0.68, 8);
+  const barX  = (t) => PAD.left + (t - 1) * slotW + (slotW - barW) / 2;
+
+  const ac  = _hexToRGB(accentHex);
+  const css = (a = 1) => `rgba(${ac.r},${ac.g},${ac.b},${a})`;
+
+  // ── Canvas ─────────────────────────────────────────────────────────────────
+  const canvas = document.createElement('canvas');
+  canvas.width  = W;
+  canvas.height = H;
+  const g = canvas.getContext('2d');
+
+  g.fillStyle = '#FFFFFF';
+  g.fillRect(0, 0, W, H);
+
+  // ── Grille ─────────────────────────────────────────────────────────────────
+  g.font = '11px Arial, sans-serif';
+  for (let i = 1; i <= 4; i++) {
+    const v = (i / 4) * maxVal;
+    const y = toY(v);
+    g.strokeStyle = '#F3F4F6'; g.lineWidth = 1; g.setLineDash([]);
+    g.beginPath(); g.moveTo(PAD.left, y); g.lineTo(PAD.left + CW, y); g.stroke();
+    const lbl = v >= 1e6 ? `${(v / 1e6).toFixed(1)}\u00a0M\u20ac` : `${Math.round(v / 1000)}\u00a0k\u20ac`;
+    g.fillStyle = '#9CA3AF'; g.textAlign = 'right';
+    g.fillText(lbl, PAD.left - 8, y + 4);
+  }
+
+  // ── Barres ─────────────────────────────────────────────────────────────────
+  for (let t = 1; t <= nYears; t++) {
+    const x   = barX(t);
+    const top = toY(cumSav[t]);
+    const h   = baseY - top;
+    // Avant remboursement : accent pâle — après : plein
+    g.fillStyle = (pb && t >= pb) ? css(1) : css(0.22);
+    g.fillRect(x, top, barW, h);
+  }
+
+  // ── Ligne investissement (seuil de remboursement) ──────────────────────────
+  if (investE > 0 && investE < maxVal) {
+    const yInv = toY(investE);
+    g.save();
+    g.setLineDash([5, 4]); g.strokeStyle = '#EF4444'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(PAD.left, yInv); g.lineTo(PAD.left + CW, yInv); g.stroke();
+    g.restore();
+    // Étiquette à droite de la ligne
+    const invStr = investE >= 1e6
+      ? `${(investE / 1e6).toFixed(1)}\u00a0M\u20ac`
+      : `${Math.round(investE / 1000)}\u00a0k\u20ac`;
+    g.save();
+    g.font = '10px Arial, sans-serif'; g.fillStyle = '#EF4444'; g.textAlign = 'right';
+    g.fillText(`Invest.\u00a0${invStr}`, PAD.left + CW - 2, yInv - 5);
+    g.restore();
+  }
+
+  // ── Annotation payback ─────────────────────────────────────────────────────
+  if (pb && pb <= nYears) {
+    const cx  = barX(pb) + barW / 2;
+    const top = toY(cumSav[pb]);
+    const lbl = `\u2714\u00a0Remboursé an\u00a0${pb}`;
+    g.save();
+    g.font = 'bold 11px Arial, sans-serif';
+    const tw = g.measureText(lbl).width;
+    // Boîte au-dessus de la barre
+    const bx = Math.min(Math.max(cx - tw / 2 - 6, PAD.left), PAD.left + CW - tw - 12);
+    const by = top - 28;
+    g.fillStyle = css(0.10); g.fillRect(bx, by, tw + 12, 18);
+    g.fillStyle = css(1); g.textAlign = 'left';
+    g.fillText(lbl, bx + 6, by + 13);
+    // Petite flèche vers le bas
+    g.strokeStyle = css(0.4); g.lineWidth = 1; g.setLineDash([3, 3]);
+    g.beginPath(); g.moveTo(cx, by + 18); g.lineTo(cx, top - 2); g.stroke();
+    g.restore();
+  }
+
+  // ── Total an 25 ────────────────────────────────────────────────────────────
+  const total = cumSav[nYears];
+  if (total > 0) {
+    const totalStr = total >= 1e6
+      ? `${(total / 1e6).toFixed(1)}\u00a0M\u20ac`
+      : `${Math.round(total / 1000)}\u00a0k\u20ac`;
+    const cx  = barX(nYears) + barW / 2;
+    const top = toY(total);
+    g.save();
+    g.font = 'bold 13px Arial, sans-serif';
+    g.fillStyle = css(1); g.textAlign = 'center';
+    g.fillText(totalStr, cx, top - 7);
+    g.restore();
+  }
+
+  // ── Axe X ──────────────────────────────────────────────────────────────────
+  g.font = '11px Arial, sans-serif'; g.fillStyle = '#9CA3AF'; g.textAlign = 'center';
+  for (let t = 1; t <= nYears; t += 4) {
+    g.fillText(`An\u00a0${t}`, barX(t) + barW / 2, H - PAD.bottom + 18);
+  }
+
+  // ── Axes ───────────────────────────────────────────────────────────────────
+  g.strokeStyle = '#E5E7EB'; g.lineWidth = 1; g.setLineDash([]);
+  g.beginPath();
+  g.moveTo(PAD.left, PAD.top); g.lineTo(PAD.left, PAD.top + CH);
+  g.lineTo(PAD.left + CW, PAD.top + CH); g.stroke();
+
+  // ── Titre ──────────────────────────────────────────────────────────────────
+  g.fillStyle = '#1F2937'; g.textAlign = 'left'; g.setLineDash([]);
+  g.font = 'bold 13px Arial, sans-serif';
+  g.fillText('\u00c9conomies cumul\u00e9es sur 25\u00a0ans', PAD.left, 30);
+
+  // ── Légende ────────────────────────────────────────────────────────────────
+  const legY = H - 14;
+  g.save();
+  g.fillStyle = css(0.22); g.fillRect(PAD.left, legY - 8, 14, 10);
+  g.fillStyle = '#6B7280'; g.font = '11px Arial, sans-serif'; g.textAlign = 'left';
+  g.fillText('Remboursement en cours', PAD.left + 20, legY);
+  g.fillStyle = css(1); g.fillRect(PAD.left + 220, legY - 8, 14, 10);
+  g.fillStyle = '#6B7280';
+  g.fillText('Gains nets', PAD.left + 240, legY);
+  // Ligne rouge = investissement
+  g.strokeStyle = '#EF4444'; g.lineWidth = 1.5; g.setLineDash([4, 3]);
+  g.beginPath(); g.moveTo(PAD.left + 340, legY - 3); g.lineTo(PAD.left + 356, legY - 3); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = '#6B7280';
+  g.fillText('Montant investi', PAD.left + 362, legY);
+  g.restore();
+
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 }
 
 // ── Collecte du contexte ────────────────────────────────────────────────────
@@ -102,6 +265,7 @@ async function generateProposal() {
     Header, Footer,
     AlignmentType, BorderStyle, WidthType, ShadingType, VerticalAlign,
     PageNumber, TabStopType, TabStopPosition,
+    ImageRun,
   } = docx;
 
   // ── Palette ──────────────────────────────────────────────────────────────
@@ -238,6 +402,10 @@ async function generateProposal() {
   const ecoStr     = ctx.ecoAn1 > 0 ? `${Math.round(ctx.ecoAn1 / 1000).toLocaleString('fr')} k\u20ac/an` : '—';
   const prodStr    = ctx.prodMWh > 0 ? `${ctx.prodMWh.toLocaleString('fr')} MWh/an` : '—';
 
+  // ── Graphe break-even ─────────────────────────────────────────────────────
+  const chartBlob = await _drawBreakevenChart(ctx, AMBER);
+  const chartData = await chartBlob.arrayBuffer();
+
   // ── Document ──────────────────────────────────────────────────────────────
   const doc = new Document({
     styles: {
@@ -312,6 +480,20 @@ async function generateProposal() {
           { label: 'Retour sur investissement', value: paybackStr },
           { label: 'Économie annuelle', value: ecoStr },
         ]),
+        spacer(240),
+        new Paragraph({
+          spacing: { before: 0, after: 0 },
+          children: [new ImageRun({
+            type: 'png',
+            data: chartData,
+            transformation: { width: 590, height: 274 },
+            altText: {
+              title: 'Seuil de rentabilité',
+              description: 'Dépenses cumulées avec et sans panneaux solaires',
+              name: 'breakeven-chart',
+            },
+          })],
+        }),
 
         // ── Contexte site ────────────────────────────────────────────────────
         sectionTitle('Contexte du site'),

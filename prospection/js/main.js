@@ -7,11 +7,15 @@ window.CLIENT = null;
 function applyClient(client) {
   window.CLIENT = client;
 
-  // Couleur accent : surcharge la CSS variable --sun
+  // Couleur accent : surcharge les CSS variables --sun et --sun-dark
   const hex = '#' + client.accentColor;
   document.documentElement.style.setProperty('--sun', hex);
-  // Calcule une variante sombre (~15% plus sombre) pour --sun-dark
-  document.documentElement.style.setProperty('--sun-dark', hex);
+  // Variante sombre : multiplie chaque canal par 0.85
+  const r = parseInt(client.accentColor.slice(0, 2), 16);
+  const g = parseInt(client.accentColor.slice(2, 4), 16);
+  const b = parseInt(client.accentColor.slice(4, 6), 16);
+  const darker = '#' + [r, g, b].map(c => Math.round(c * 0.85).toString(16).padStart(2, '0')).join('');
+  document.documentElement.style.setProperty('--sun-dark', darker);
 
   // Topbar : badge client
   const badge = document.getElementById('clientBadge');

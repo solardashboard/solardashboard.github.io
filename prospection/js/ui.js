@@ -8,7 +8,6 @@ function formatKeuros(k, suffix = '') {
 }
 
 function quartileClass(q) { return `score-q${q}`; }
-function statusClass(s)   { return { new: 's-new', contact: 's-contact', signed: 's-signed', lost: 's-lost' }[s] || 's-new'; }
 
 // ── Advanced filter state ─────────────────────────────────────────────────
 let _caMin = 0, _caMax = Infinity;

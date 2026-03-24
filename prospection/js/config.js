@@ -36,8 +36,6 @@ const CLIENTS = {
 };
 
 const CONFIG = {
-  // PASSWORD legacy supprimé — voir CLIENTS ci-dessus
-  PASSWORD:       null, // conservé pour compatibilité, non utilisé
   // Basemaps
   TILE_CARTO_URL:  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   TILE_CARTO_ATTR: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',

@@ -49,6 +49,13 @@ body {
 .topbar-sep { color: var(--dark-3); }
 .topbar-title { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+.client-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.7rem; border-radius: 20px;
+  border: 1px solid currentColor; font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.03em; opacity: 0.9;
+}
+.client-badge::before { content: '●'; font-size: 0.5rem; }
 .stat-chip {
   background: rgba(245,158,11,0.12);
   border: 1px solid rgba(245,158,11,0.2);
@@ -240,11 +247,6 @@ body {
 .lead-info { flex: 1; min-width: 0; }
 .lead-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lead-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
-.lead-status { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; white-space: nowrap; }
-.s-new     { background: rgba(56,189,248,0.15); color: #38bdf8; }
-.s-contact { background: rgba(245,158,11,0.15); color: var(--sun); }
-.s-signed  { background: rgba(34,197,94,0.15);  color: #4ade80; }
-.s-lost    { background: rgba(239,68,68,0.15);  color: #f87171; }
 
 /* ── MAP ── */
 .map-wrap { flex: 1; position: relative; }
@@ -281,7 +283,6 @@ body {
 .detail-address { font-size: 0.78rem; color: var(--muted); }
 .detail-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.6rem; }
 .badge-naf { background: rgba(56,189,248,0.12); color: #38bdf8; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 5px; }
-.badge-status { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 5px; }
 
 .detail-body { flex: 1; overflow-y: auto; padding: 0.85rem 1.1rem; }
 .detail-body::-webkit-scrollbar { width: 3px; }
@@ -503,6 +504,14 @@ body {
 }
 .sizer-result-row span:first-child { color: var(--muted); }
 .sizer-result-row span:last-child  { color: var(--text); font-weight: 600; }
+.sizer-proposal-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  width: 100%; margin-top: 1.2rem; padding: 0.7rem 1rem;
+  background: transparent; border: 1.5px solid var(--sun); border-radius: 8px;
+  color: var(--sun); font-family: Inter, sans-serif; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.sizer-proposal-btn:hover { background: var(--sun); color: #1f2937; }
 
 /* ── PASSWORD GATE ── */
 .gate { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
@@ -578,41 +587,3 @@ body {
 .popup-inner .pop-meta { font-size: 0.8rem; color: var(--muted); }
 .popup-inner .pop-score { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem; font-size: 0.8rem; font-weight: 700; color: #4ade80; }
 
-/* ── Bouton "Générer la proposition" dans le sizer ─────────────────────── */
-.sizer-proposal-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  margin-top: 1.2rem;
-  padding: 0.7rem 1rem;
-  background: transparent;
-  border: 1.5px solid var(--sun);
-  border-radius: 8px;
-  color: var(--sun);
-  font-family: Inter, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.sizer-proposal-btn:hover {
-  background: var(--sun);
-  color: #1f2937;
-}
-
-/* ── Badge client (topbar) ─────────────────────────────────────────────── */
-.client-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 20px;
-  border: 1px solid currentColor;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  opacity: 0.9;
-}
-.client-badge::before { content: '●'; font-size: 0.5rem; }
