@@ -78,6 +78,11 @@ function selectLead(id) {
   nafEl.textContent   = sector || (l.naf ? `NAF ${l.naf}` : '');
   nafEl.style.display = (sector || l.naf) ? '' : 'none';
 
+  const propEl = document.getElementById('dp-proprietaire');
+  if (propEl) {
+    propEl.style.display = l.proprietaire ? '' : 'none';
+  }
+
   // Potentiel économique
   document.getElementById('dp-ca').textContent      = l.ca_potentiel  ? formatKeuros(l.ca_potentiel)  : '—';
   document.getElementById('dp-payback').textContent = l.payback_years ? `${l.payback_years} ans`                                 : '—';

@@ -166,7 +166,7 @@ function renderList() {
     <div class="lead-item ${State.selectedId === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
       <div class="lead-score ${quartileClass(l.quartile)}">#${l.rank}</div>
       <div class="lead-info">
-        <div class="lead-name">${l.name}</div>
+        <div class="lead-name">${l.name}${l.proprietaire ? '<span class="lead-badge-proprietaire">🏠 Proprio</span>' : ''}</div>
         <div class="lead-meta">
           ${l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : '—'} · ${l.commune || '—'}
         </div>

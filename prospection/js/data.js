@@ -80,6 +80,8 @@ function _parseFeature(feature, index) {
     website:      p.website       || p.site      || '',
     linkedin:     p.linkedin      || '',
     director_name:p.director_name || p.directeur || '',
+    // Propriétaire
+    proprietaire: (p.proprietaire === true || p.proprietaire === 'True' || p.proprietaire === 'true' || p.proprietaire === 1),
     // Status
     status,
     statusLabel: STATUS_LABELS[status],
