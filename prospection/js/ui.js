@@ -11,7 +11,8 @@ function quartileClass(q) { return `score-q${q}`; }
 
 // ── Advanced filter state ─────────────────────────────────────────────────
 let _caMin = 0, _caMax = Infinity;
-let _activeSectors = null; // null = all; otherwise Set of active sector names
+let _activeSectors    = null;  // null = all; otherwise Set of active sector names
+let _filterProprietaire = false; // true = show only propriétaires vérifiés
 
 function _leadSector(l) { return nafToSector(l.naf) || 'Autre'; }
 
@@ -22,7 +23,8 @@ function filteredLeads() {
     const matchSearch  = l.name.toLowerCase().includes(State.currentSearch.toLowerCase());
     const matchCA      = l.ca_potentiel >= _caMin && l.ca_potentiel <= _caMax;
     const matchSector  = !_activeSectors || _activeSectors.has(_leadSector(l));
-    return matchFilter && matchSearch && matchCA && matchSector;
+    const matchProp    = !_filterProprietaire || l.proprietaire === true;
+    return matchFilter && matchSearch && matchCA && matchSector && matchProp;
   });
 }
 
@@ -61,6 +63,14 @@ function renderFilters() {
   // Reset toggle-all button label
   const btn = document.querySelector('.sector-toggle-all');
   if (btn) btn.textContent = 'Tout désélect.';
+
+  // Propriétaire filter — only show if at least one lead has the field set
+  const hasProprietaireData = State.leads.some(l => l.proprietaire === true);
+  const propSection = document.getElementById('filterProprietaireSection');
+  if (propSection) propSection.style.display = hasProprietaireData ? '' : 'none';
+  _filterProprietaire = false;
+  const propCb = document.getElementById('filterProprietaireCb');
+  if (propCb) propCb.checked = false;
 }
 
 function _updateRangeLabels() {
@@ -91,6 +101,12 @@ function onSectorChange(cb) {
   if (cb.checked) _activeSectors.add(cb.value);
   else            _activeSectors.delete(cb.value);
   _setFilterDirty(true);
+  renderList();
+}
+
+function onProprietaireFilterChange(cb) {
+  _filterProprietaire = cb.checked;
+  _setFilterDirty(cb.checked);
   renderList();
 }
 
@@ -166,7 +182,7 @@ function renderList() {
     <div class="lead-item ${State.selectedId === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
       <div class="lead-score ${quartileClass(l.quartile)}">#${l.rank}</div>
       <div class="lead-info">
-        <div class="lead-name">${l.name}${l.proprietaire ? '<span class="lead-badge-proprietaire">🏠 Proprio</span>' : ''}</div>
+        <div class="lead-name">${l.name}${l.proprietaire ? '<span class="lead-badge-proprietaire">✓ vérifié</span>' : ''}</div>
         <div class="lead-meta">
           ${l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : '—'} · ${l.commune || '—'}
         </div>

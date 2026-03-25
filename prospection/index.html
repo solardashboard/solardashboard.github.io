@@ -108,6 +108,13 @@
             <div class="sector-list" id="sectorList"></div>
           </div>
 
+          <div class="adv-filter-section" id="filterProprietaireSection" style="display:none">
+            <label class="sector-check">
+              <input type="checkbox" id="filterProprietaireCb" onchange="onProprietaireFilterChange(this)" />
+              <span>Propriétaires vérifiés uniquement <span class="badge-proprietaire" style="margin-left:0.3rem">✓ vérifié</span></span>
+            </label>
+          </div>
+
         </div>
       </div>
 
@@ -151,7 +158,7 @@
           <div class="detail-address" id="dp-address"></div>
           <div class="detail-badges">
             <span class="badge-naf" id="dp-naf"></span>
-            <span class="badge-proprietaire" id="dp-proprietaire" style="display:none">🏠 Propriétaire</span>
+            <span class="badge-proprietaire" id="dp-proprietaire" style="display:none">✓ Propriétaire vérifié</span>
           </div>
         </div>
 
