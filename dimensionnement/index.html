@@ -156,21 +156,37 @@
       background: linear-gradient(135deg, var(--green-bg), rgba(22,163,74,0.18));
       border: 1px solid rgba(22,163,74,0.32);
       border-radius: 14px; padding: 1.1rem 1.3rem;
-      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
     }
-    .cta-left {}
+    .cta-left { flex-shrink: 0; }
     .cta-title { font-size: 1rem; font-weight: 800; }
     .cta-sub { font-size: 0.72rem; color: var(--green-2); margin-top: 0.2rem; }
     .cta-proof { font-size: 0.65rem; color: var(--muted); margin-top: 0.4rem; }
+
+    /* Formulaire RDV */
+    .cta-form { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; min-width: 220px; }
+    .cta-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .cta-field { display: flex; flex-direction: column; gap: 0.18rem; }
+    .cta-field label { font-size: 0.64rem; color: var(--green-2); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .cta-field input, .cta-field select {
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(22,163,74,0.3);
+      border-radius: 7px; color: var(--text); font-size: 0.82rem; font-family: inherit;
+      padding: 0.38rem 0.55rem; outline: none; transition: border-color 0.15s;
+      color-scheme: dark;
+    }
+    .cta-field input:focus, .cta-field select:focus { border-color: rgba(22,163,74,0.7); }
+    .cta-field select option { background: #1e293b; }
+    .cta-field-full { grid-column: 1 / -1; }
+
     .cta-btn {
       background: linear-gradient(135deg, var(--green), #15803d);
       color: #fff; font-weight: 700; font-size: 0.85rem;
-      padding: 0.7rem 1.3rem; border-radius: 9px;
+      padding: 0.65rem 1.3rem; border-radius: 9px;
       border: none; cursor: pointer; font-family: inherit;
-      white-space: nowrap; flex-shrink: 0;
+      white-space: nowrap; width: 100%;
       transition: opacity 0.15s, transform 0.15s;
       box-shadow: 0 4px 16px rgba(22,163,74,0.3);
-      display: flex; align-items: center; gap: 0.5rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
     }
     .cta-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .cta-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
@@ -191,6 +207,25 @@
 
     .empty-state { grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--muted); }
     .empty-state span { font-size: 2rem; display: block; margin-bottom: 0.6rem; }
+
+    /* Coche toiture */
+    .toit-check-row {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 9px; padding: 0.6rem 0.75rem; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .toit-check-row:hover { border-color: rgba(245,158,11,0.35); }
+    .toit-check-row input[type=checkbox] { margin-top: 2px; flex-shrink: 0; accent-color: var(--sun); cursor: pointer; }
+    .toit-check-text { font-size: 0.78rem; color: var(--text); line-height: 1.4; font-weight: 600; }
+    .toit-check-hint { display: block; font-size: 0.68rem; color: var(--muted); font-weight: 400; margin-top: 0.2rem; line-height: 1.45; }
+    .toit-check-hint em { color: var(--text); font-style: italic; }
+    .toit-note {
+      padding: 0.65rem 0.85rem;
+      background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.28);
+      border-radius: 9px; font-size: 0.73rem; color: var(--text); line-height: 1.55;
+    }
+    .toit-note strong { color: var(--sun); }
   </style>
 
   <script src="../prospection/js/naf.js"></script>
@@ -301,9 +336,10 @@ function calc() {
     return;
   }
 
-  const ca_k    = KWC * CA_PER_KWC;
-  const investE = ca_k * 1000;
-  const prodMWh = KWC * PROD_PER_KWC;
+  const ca_k       = KWC * CA_PER_KWC;
+  const toiture    = document.getElementById('fToiture')?.checked;
+  const investE    = ca_k * 1000 * (toiture ? 1.15 : 1); // +15% dépose-repose si toiture à refaire
+  const prodMWh    = KWC * PROD_PER_KWC;
 
   // Payback : production × taux_autoconso × prix_elec, cumulé avec dégradation + hausse
   // Le taux est le slider directement (modèle Python — pas de plafonnement par conso)
@@ -316,9 +352,12 @@ function calc() {
   animatePayback(payback);
   document.getElementById('rEco').textContent = fmt(prodMWh * autoconso * prixElec / 1000, '/an');
   document.getElementById('rCA').textContent  = fmt(ca_k);
+
+  const noteEl = document.getElementById('rToitNote');
+  if (noteEl) noteEl.style.display = toiture ? '' : 'none';
 }
 
-// Envoi email silencieux via EmailJS
+// Envoi email via EmailJS
 async function sendLead() {
   const btn = document.getElementById('ctaBtn');
   btn.disabled = true;
@@ -331,33 +370,43 @@ async function sendLead() {
   const eco       = document.getElementById('rEco').textContent;
   const invest    = document.getElementById('rCA').textContent;
   const nom       = pNom ? decodeURIComponent(pNom) : 'Non renseigné';
+  const toiture   = document.getElementById('fToiture')?.checked ? 'Oui' : 'Non';
+  const dateRdv   = document.getElementById('ctaDate').value
+    ? new Date(document.getElementById('ctaDate').value).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'Non précisée';
+  const creneau   = document.getElementById('ctaCreneau').value;
+  const tel       = document.getElementById('ctaTel').value || 'Non renseigné';
 
   try {
     emailjs.init(EMAILJS_PUBLIC_KEY);
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email:    DEST_EMAIL,
-      lead_nom:    nom,
-      lead_naf:    pNaf || '—',
-      surface:     pSurface ? Math.round(pSurface).toLocaleString('fr') + ' m²' : '—',
-      puissance:   KWC + ' kWc',
-      production:  PROD_MWH + ' MWh/an',
-      prix_elec:   prixElec + ' €/MWh',
+      to_email:       DEST_EMAIL,
+      lead_nom:       nom,
+      lead_naf:       pNaf || '—',
+      surface:        pSurface ? Math.round(pSurface).toLocaleString('fr') + ' m²' : '—',
+      puissance:      KWC + ' kWc',
+      production:     PROD_MWH + ' MWh/an',
+      prix_elec:      prixElec + ' €/MWh',
       autoconso,
       hausse,
+      toiture,
       payback,
-      eco_an1:     eco,
+      eco_an1:        eco,
       investissement: invest,
-      lat:         pLat || '—',
-      lon:         pLon || '—',
-      url:         window.location.href,
+      rdv_date:       dateRdv,
+      rdv_creneau:    creneau,
+      rdv_tel:        tel,
+      lat:            pLat || '—',
+      lon:            pLon || '—',
+      url:            window.location.href,
     });
     btn.classList.add('sent');
-    btn.innerHTML = '✅ Demande envoyée !';
+    btn.innerHTML = '✅ Demande envoyée — on vous rappelle bientôt !';
   } catch (err) {
     console.error('EmailJS error:', err);
     btn.disabled = false;
     btn.innerHTML = '⚠️ Erreur — réessayer';
-    setTimeout(() => { btn.innerHTML = 'Obtenir une étude gratuite →'; }, 3000);
+    setTimeout(() => { btn.innerHTML = 'Demander à être rappelé →'; }, 3000);
   }
 }
 
@@ -453,6 +502,14 @@ function render() {
         </div>
       </div>
 
+      <label class="toit-check-row">
+        <input type="checkbox" id="fToiture" onchange="calc()" />
+        <span class="toit-check-text">
+          Toiture à réfectionner sous 5 ans
+          <span class="toit-check-hint">Pour éviter une dépose-repose coûteuse des panneaux lors des travaux, mieux vaut réfectionner la toiture <em>avant</em> l'installation.</span>
+        </span>
+      </label>
+
       <div class="kpi-hero">
         <div class="kpi-hero-label">Retour sur investissement</div>
         <div class="kpi-hero-val" id="rPayback">—</div>
@@ -471,18 +528,43 @@ function render() {
           <div class="kpi-sub">coût installation estimé</div>
         </div>
       </div>
+
+      <div class="toit-note" id="rToitNote" style="display:none">
+        🏗️ <strong>Réfection toiture recommandée avant installation</strong> — Coupler les travaux de toiture avec l'installation solaire évite une dépose-repose ultérieure et optimise votre investissement global.
+      </div>
     </div>
 
     <!-- ── CTA pleine largeur ── -->
     <div class="cta-col">
       <div class="cta-left">
         <div class="cta-title">Ces résultats vous intéressent ?</div>
-        <div class="cta-sub">Un expert vous rappelle sous 48h pour affiner l'étude — sans engagement</div>
+        <div class="cta-sub">Choisissez un créneau — un expert vous rappelle pour affiner l'étude</div>
         <div class="cta-proof">☑ Gratuit · ☑ Sans engagement · ☑ Installateur certifié RGE</div>
       </div>
-      <button class="cta-btn" id="ctaBtn" onclick="sendLead()">
-        Obtenir une étude gratuite →
-      </button>
+      <div class="cta-form">
+        <div class="cta-fields">
+          <div class="cta-field">
+            <label>📅 Date souhaitée</label>
+            <input type="date" id="ctaDate" />
+          </div>
+          <div class="cta-field">
+            <label>🕐 Créneau</label>
+            <select id="ctaCreneau">
+              <option value="8h–10h">8h – 10h</option>
+              <option value="10h–12h">10h – 12h</option>
+              <option value="14h–16h" selected>14h – 16h</option>
+              <option value="16h–18h">16h – 18h</option>
+            </select>
+          </div>
+          <div class="cta-field cta-field-full">
+            <label>📞 Votre numéro de téléphone</label>
+            <input type="tel" id="ctaTel" placeholder="06 xx xx xx xx" />
+          </div>
+        </div>
+        <button class="cta-btn" id="ctaBtn" onclick="sendLead()">
+          Demander à être rappelé →
+        </button>
+      </div>
     </div>
 
   `;
@@ -491,6 +573,10 @@ function render() {
 }
 
 render();
+
+// Date min = aujourd'hui
+const dateInput = document.getElementById('ctaDate');
+if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
 </script>
 </body>
 </html>
