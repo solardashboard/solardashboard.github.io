@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comment c'est calculé — SolarDashboard</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sun: #f59e0b; --sun-dark: #d97706;
+      --dark: #0f172a; --dark-2: #1e293b; --dark-3: #334155;
+      --text: #f1f5f9; --muted: #94a3b8;
+      --green: #16a34a; --green-2: #4ade80;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .topbar {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 1.25rem;
+      background: rgba(15,23,42,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { display: flex; align-items: center; gap: 0.45rem; font-weight: 800; font-size: 0.92rem; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; }
+    .topbar-sep { color: var(--dark-3); }
+    .topbar-title { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .back-btn {
+      margin-left: auto;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted); font-size: 0.73rem; font-weight: 600;
+      padding: 0.28rem 0.7rem; border-radius: 6px; cursor: pointer;
+      text-decoration: none; font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+    .content {
+      max-width: 680px; width: 100%; margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+      display: flex; flex-direction: column; gap: 2rem;
+    }
+
+    .page-header { display: flex; flex-direction: column; gap: 0.4rem; }
+    .page-header h1 { font-size: 1.4rem; font-weight: 800; }
+    .page-header p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    .section { display: flex; flex-direction: column; gap: 1rem; }
+    .section-title {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--muted);
+      border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem;
+    }
+
+    .card {
+      background: var(--dark-2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 1rem 1.15rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .card h3 { font-size: 0.88rem; font-weight: 700; }
+    .card p, .card li { font-size: 0.78rem; color: var(--muted); line-height: 1.65; }
+    .card strong { color: var(--text); font-weight: 600; }
+    .card ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+    .card code {
+      font-size: 0.75rem; background: rgba(255,255,255,0.06);
+      border-radius: 4px; padding: 0.1rem 0.35rem;
+      color: var(--sun); font-family: 'Courier New', monospace;
+    }
+    .card .formula {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 0.6rem 0.8rem;
+      font-size: 0.75rem; color: var(--text); font-family: 'Courier New', monospace;
+      line-height: 1.8;
+    }
+
+    .highlight {
+      border-color: rgba(245,158,11,0.2);
+      background: rgba(245,158,11,0.04);
+    }
+    .highlight h3 { color: var(--sun); }
+
+    .sd-card {
+      border-color: rgba(22,163,74,0.3);
+      background: rgba(22,163,74,0.05);
+    }
+    .sd-card h3 { color: var(--green-2); }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 0.85rem 1.25rem; text-align: center;
+      color: var(--muted); font-size: 0.7rem; margin-top: auto;
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../" class="logo">
+    <img src="../assets/icon.png" class="logo-icon" alt="SolarDashboard" />
+    SolarDashboard
+  </a>
+  <div class="topbar-sep">/</div>
+  <div class="topbar-title">Méthodologie de calcul</div>
+  <a href="javascript:history.back()" class="back-btn">← Retour à la simulation</a>
+</div>
+
+<div class="content">
+
+  <div class="page-header">
+    <h1>Comment est calculée votre simulation ?</h1>
+    <p>Transparence totale sur les hypothèses et formules utilisées. Ces résultats sont indicatifs — une étude de faisabilité complète affine chaque paramètre à votre situation réelle.</p>
+  </div>
+
+  <!-- PRODUCTION -->
+  <div class="section">
+    <div class="section-title">Production solaire</div>
+
+    <div class="card">
+      <h3>⚡ Production annuelle estimée</h3>
+      <p>La production est calculée à partir de la puissance installée et d'un <strong>ratio de production spécifique</strong> qui dépend de la latitude du site :</p>
+      <div class="formula">
+Production (MWh/an) = Puissance (kWc) × Ratio (MWh/kWc/an)
+
+Ratio ≈ 1,30 à 44°N (Toulouse, Nice)
+Ratio ≈ 1,15 à 46°N (Lyon)
+Ratio ≈ 1,02 à 48°N (Paris)
+      </div>
+      <p>Ce ratio intègre l'irradiation solaire locale, les pertes systèmes (câblage, onduleur, salissures) et une orientation toiture standard (Sud, inclinaison 15-25°). Les panneaux dégradent d'environ <strong>0,7 %/an</strong> sur leur durée de vie.</p>
+    </div>
+  </div>
+
+  <!-- AUTOCONSOMMATION -->
+  <div class="section">
+    <div class="section-title">Taux d'autoconsommation</div>
+
+    <div class="card highlight">
+      <h3>Valeur utilisée : 70 % (moyenne C&amp;I constatée)</h3>
+      <p>Le taux d'autoconsommation représente la part de la production solaire consommée directement sur site (vs. injectée sur le réseau).</p>
+      <p>Pour les bâtiments <strong>tertiaires et industriels</strong>, la production de midi coïncide bien avec les pics de consommation diurne. Les études de terrain sur ce segment donnent une moyenne de <strong>65–75 %</strong> selon le profil de charge. Nous retenons 70 % comme valeur centrale conservative.</p>
+      <p>L'énergie réellement autoconsommée est également plafonnée par votre consommation totale — on ne peut pas autoconsommer plus qu'on ne consomme.</p>
+      <div class="formula">
+Énergie autoconsommée = min(Production × 70%, Consommation)
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCONOMIES -->
+  <div class="section">
+    <div class="section-title">Économies annuelles</div>
+
+    <div class="card">
+      <h3>💰 Calcul des économies an 1</h3>
+      <p>Les économies correspondent à l'énergie autoconsommée valorisée au prix d'achat de l'électricité :</p>
+      <div class="formula">
+Économies an 1 (€) = Énergie autoconsommée (MWh) × Prix électricité (€/MWh)
+      </div>
+      <p>Le <strong>prix par défaut de 160 €/MWh</strong> reflète le tarif moyen constaté pour les clients C&I en 2024 (hors taxes récupérables). Ajustez-le selon votre contrat réel pour une estimation plus précise.</p>
+    </div>
+  </div>
+
+  <!-- COÛT INSTALLATION -->
+  <div class="section">
+    <div class="section-title">Coût d'installation</div>
+
+    <div class="card">
+      <h3>🏗️ Investissement estimé</h3>
+      <p>Le coût d'installation est estimé à <strong>1 100 €/kWc</strong> (hors taxes), ce qui représente une valeur médiane pour les installations C&I de taille moyenne en France en 2024.</p>
+      <ul>
+        <li>Petites installations (&lt; 100 kWc) : 1 200 – 1 500 €/kWc</li>
+        <li>Moyennes (100 – 500 kWc) : 900 – 1 200 €/kWc</li>
+        <li>Grandes (&gt; 500 kWc) : 700 – 1 000 €/kWc</li>
+      </ul>
+      <p>Ce coût inclut les panneaux, l'onduleur, la structure de montage, le raccordement et la mise en service. Il n'inclut pas d'éventuels travaux de toiture préalables. Des aides (prime à l'autoconsommation, déductions fiscales) peuvent réduire ce montant.</p>
+    </div>
+  </div>
+
+  <!-- PAYBACK -->
+  <div class="section">
+    <div class="section-title">Temps de retour sur investissement</div>
+
+    <div class="card">
+      <h3>📈 Calcul du payback</h3>
+      <p>Le payback est calculé en cumulant les économies annuelles jusqu'à atteindre le coût d'installation. Deux effets sont pris en compte :</p>
+      <ul>
+        <li><strong>Hausse des prix de l'électricité</strong> : +3 %/an (moyenne sur 20 ans)</li>
+        <li><strong>Dégradation des panneaux</strong> : −0,7 %/an de production</li>
+      </ul>
+      <div class="formula">
+Économies année t = Énergie autoconso(t) × Prix élec × (1+3%)^t
+Énergie autoconso(t) = min(Production × (1−0,7%)^t × 70%, Conso)
+
+Payback = t tel que Σ Économies(t) ≥ Investissement
+      </div>
+      <p>La durée de vie garantie des panneaux est généralement de <strong>25 à 30 ans</strong>.</p>
+    </div>
+  </div>
+
+  <!-- QUI EST SD -->
+  <div class="section">
+    <div class="section-title">À propos de SolarDashboard</div>
+
+    <div class="card sd-card">
+      <h3>SolarDashboard — cartographie IA des toitures PV</h3>
+      <p>SolarDashboard est une plateforme de prospection solaire qui analyse automatiquement les toitures à partir d'images satellites pour identifier les sites à fort potentiel photovoltaïque.</p>
+      <p>Nous accompagnons les installateurs et développeurs solaires dans leur prospection C&I en leur fournissant des données de dimensionnement pré-qualifiées : surface exploitable, orientation, ombrage, consommation estimée.</p>
+      <p>La simulation que vous venez de consulter a été générée automatiquement à partir de l'analyse de votre site. Pour une étude complète et personnalisée, contactez-nous.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html">← Retour à la simulation</a> ·
+  <a href="../legal.html">Mentions légales</a>
+</footer>
+
+</body>
+</html>
