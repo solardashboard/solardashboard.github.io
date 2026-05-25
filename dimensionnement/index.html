@@ -309,24 +309,23 @@ function sweetScore(payback) {
   return Math.max(5, Math.min(100, Math.round((20 - payback) / 15 * 100)));
 }
 function sweetColor(score) {
-  if (score >= 75) return '#22c55e';
-  if (score >= 55) return '#84cc16';
-  if (score >= 38) return '#eab308';
-  if (score >= 20) return '#f97316';
-  return '#ef4444';
+  if (score >= 85) return '#22c55e';
+  if (score >= 65) return '#84cc16';
+  if (score >= 45) return '#eab308';
+  return '#f97316';
 }
 function sweetLabel(score) {
-  if (score >= 75) return { text: 'Excellent potentiel', color: '#22c55e' };
-  if (score >= 55) return { text: 'Très intéressant',    color: '#84cc16' };
-  if (score >= 38) return { text: 'Potentiel modéré',    color: '#eab308' };
-  return            { text: 'Profil moins favorable',   color: '#f97316' };
+  if (score >= 85) return { text: 'Excellent potentiel',  color: '#22c55e' };
+  if (score >= 65) return { text: 'Très intéressant',     color: '#84cc16' };
+  if (score >= 45) return { text: 'Potentiel standard',   color: '#eab308' };
+  return            { text: 'Profil moins favorable',    color: '#f97316' };
 }
 function sweetSub(score, payback) {
   if (!payback || payback > 50) return 'Ajustez les paramètres pour affiner le résultat.';
-  if (score >= 75) return `En ${fmtPayback(payback)}, l'installation est amortie — et vous fixez une part de votre coût énergie pour 25 ans, quoi qu'il arrive sur les tarifs réseau.`;
-  if (score >= 55) return `Un payback de ${fmtPayback(payback)} sur des charges que vous payez de toute façon. Et chaque hausse tarifaire future améliore mécaniquement ce chiffre.`;
-  if (score >= 38) return `Le projet reste intéressant — d'autant que la volatilité des prix de l'électricité joue en votre faveur sur la durée. Ajustez votre facture réelle pour affiner.`;
-  return `Le profil actuel est moins favorable. Vérifiez que votre facture reflète bien votre coût réel, ou contactez-nous pour explorer d'autres configurations.`;
+  if (score >= 85) return `Parmi les meilleurs profils observés sur les projets PV C&I en France. En ${fmtPayback(payback)}, l'installation est amortie — puis elle produit des économies nettes pendant encore 15 à 18 ans, quoi qu'il arrive sur les tarifs réseau.`;
+  if (score >= 65) return `Profil solide. Sur 25 ans, chaque euro investi en rapporte plusieurs — et chaque hausse tarifaire future améliore mécaniquement ce résultat. C'est le profil typique des projets qui se concrétisent.`;
+  if (score >= 45) return `Dans la fourchette standard des projets toiture C&I en France. L'installation est rentable sur sa durée de vie, et la volatilité structurelle des prix de l'électricité joue en votre faveur sur le long terme.`;
+  return `Profil plus contraint que la moyenne — souvent lié à la configuration du site. Des leviers existent pour améliorer la rentabilité : contactez-nous pour les explorer ensemble.`;
 }
 
 // ── Calcul pour une config donnée (fonction pure) ────────────────────────────
