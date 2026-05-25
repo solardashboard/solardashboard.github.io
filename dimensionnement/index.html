@@ -205,6 +205,22 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Optimisation banner */
+    .opt-banner {
+      background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.28);
+      border-radius: 12px; padding: 0.85rem 1rem; display: none;
+    }
+    .opt-banner-text { font-size: 0.78rem; color: var(--text); line-height: 1.55; }
+    .opt-banner-text strong { color: var(--sun); }
+    .opt-btn {
+      margin-top: 0.55rem;
+      background: rgba(245,158,11,0.14); border: 1px solid rgba(245,158,11,0.4);
+      color: var(--sun); font-size: 0.74rem; font-weight: 700;
+      padding: 0.4rem 0.85rem; border-radius: 8px; cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .opt-btn:hover { background: rgba(245,158,11,0.26); }
+
     footer {
       border-top: 1px solid rgba(255,255,255,0.06);
       padding: 0.9rem 1.25rem; text-align: center;
@@ -253,6 +269,10 @@ const pConso   = parseFloat(P.get('conso'))   || 0;     // MWh/an — consommati
 const pLat     = parseFloat(P.get('lat'))     || null;
 const pLon     = parseFloat(P.get('lon'))     || null;
 const pId      = P.get('id')                  || null;
+
+// ── État mutable (peut être ajusté par l'optimisation) ───────────────────────
+let viewKwp  = pKwp;
+let viewProd = pProd;
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 const AUTOCONSO_CI   = 0.70;   // taux moyen autoconsommation C&I constaté
@@ -309,28 +329,17 @@ function sweetSub(score, payback) {
   return `Le profil actuel est moins favorable. Vérifiez que votre facture reflète bien votre coût réel, ou contactez-nous pour explorer d'autres configurations.`;
 }
 
-// ── Calcul principal ──────────────────────────────────────────────────────────
-function calc() {
-  const facture = parseFloat(document.getElementById('fFacture')?.value) || 0;
-
-  if (pKwp <= 0 || pProd <= 0 || facture <= 0 || pConso <= 0) {
-    document.getElementById('rEco').textContent     = '—';
-    document.getElementById('rPayback').textContent = '—';
-    updateSweet(null);
-    return;
-  }
-
-  // Prix unitaire implicite déduit de la facture prospect
-  const prixElec  = facture / pConso;   // €/MWh
-  const invest    = pKwp * CA_PER_KWC * 1000;
-  const enAutoAn1 = Math.min(pProd * AUTOCONSO_CI, pConso);
+// ── Calcul pour une config donnée (fonction pure) ────────────────────────────
+function calcFor(kwp, prod, facture) {
+  const prixElec  = facture / pConso;
+  const invest    = kwp * CA_PER_KWC * 1000;
+  const enAutoAn1 = Math.min(prod * AUTOCONSO_CI, pConso);
   const ecoAn1    = enAutoAn1 * prixElec;
 
-  // Payback avec interpolation décimale
   let cumul = 0, payback = null;
   for (let t = 0; t < 50; t++) {
     const prixT = prixElec * Math.pow(1 + HAUSSE_DEFAULT, t);
-    const prodT = pProd * Math.pow(1 - DEGR, t);
+    const prodT = prod * Math.pow(1 - DEGR, t);
     const ecoT  = Math.min(prodT * AUTOCONSO_CI, pConso) * prixT;
     if (cumul + ecoT >= invest) {
       payback = t + (invest - cumul) / ecoT;
@@ -338,12 +347,101 @@ function calc() {
     }
     cumul += ecoT;
   }
+  return { ecoAn1, payback };
+}
+
+// ── Calcul principal ──────────────────────────────────────────────────────────
+function calc() {
+  const facture = parseFloat(document.getElementById('fFacture')?.value) || 0;
+
+  if (viewKwp <= 0 || viewProd <= 0 || facture <= 0 || pConso <= 0) {
+    document.getElementById('rEco').textContent     = '—';
+    document.getElementById('rPayback').textContent = '—';
+    updateSweet(null);
+    hideOptBanner();
+    return;
+  }
+
+  const { ecoAn1, payback } = calcFor(viewKwp, viewProd, facture);
 
   flash('rEco');
   flash('rPayback');
   document.getElementById('rEco').textContent     = fmtEuros(ecoAn1) + '/an';
   document.getElementById('rPayback').textContent = fmtPayback(payback);
   updateSweet(payback);
+  maybeShowOptBanner(payback, facture);
+}
+
+// ── Optimisation : kwp au point de saturation autoconso ───────────────────────
+// Au-delà, le surplus va au réseau sans valeur → on est dans le rendement décroissant
+// kwpOpt = pConso / (0.70 × prod_ratio) = pConso × pKwp / (0.70 × pProd)
+function kwpOptimal() {
+  return pConso * pKwp / (AUTOCONSO_CI * pProd);
+}
+
+function maybeShowOptBanner(payback, facture) {
+  const banner = document.getElementById('optBanner');
+  if (!banner) return;
+
+  const isMaxConfig    = Math.abs(viewKwp - pKwp) < 0.5;
+  const kwpOpt         = kwpOptimal();
+  const significantGap = kwpOpt < pKwp * 0.92 && kwpOpt >= 5;
+
+  if (!isMaxConfig || !payback || payback < 12 || !significantGap) {
+    hideOptBanner();
+    return;
+  }
+
+  const prodOpt                    = pProd * (kwpOpt / pKwp);
+  const { ecoAn1: ecoOpt, payback: pbOpt } = calcFor(kwpOpt, prodOpt, facture);
+
+  if (!pbOpt || pbOpt >= payback) { hideOptBanner(); return; }
+
+  document.getElementById('optBannerText').innerHTML =
+    `💡 <strong>Une installation de ${Math.round(kwpOpt)} kWp</strong> offrirait un meilleur équilibre : ` +
+    `retour sur <strong>${fmtPayback(pbOpt)}</strong> avec <strong>${fmtEuros(ecoOpt)}/an</strong> d'économies.`;
+  const btn = document.getElementById('optBannerBtn');
+  btn.textContent = 'Voir cette configuration →';
+  btn.onclick = () => applyOptimum(kwpOpt, prodOpt);
+  banner.style.display = 'block';
+}
+
+function hideOptBanner() {
+  const b = document.getElementById('optBanner');
+  if (b) b.style.display = 'none';
+}
+
+function applyOptimum(kwpOpt, prodOpt) {
+  viewKwp  = kwpOpt;
+  viewProd = prodOpt;
+
+  // Mise à jour centrale-card
+  const card = document.getElementById('centraleKwc');
+  if (card) card.innerHTML =
+    `Configuration optimisée : <strong>${Math.round(kwpOpt).toLocaleString('fr')} kWp</strong>` +
+    `<span style="font-size:0.72rem;color:var(--muted);display:block;margin-top:0.2rem">` +
+    `max possible sur ce site : ${pKwp.toLocaleString('fr')} kWp</span>`;
+
+  // Swap banner
+  document.getElementById('optBannerText').innerHTML =
+    `✅ Simulation mise à jour pour <strong>${Math.round(kwpOpt)} kWp</strong>. ` +
+    `Les résultats reflètent cette configuration.`;
+  const btn = document.getElementById('optBannerBtn');
+  btn.textContent = '↩ Revenir à la configuration maximale';
+  btn.onclick = resetToMax;
+
+  calc();
+}
+
+function resetToMax() {
+  viewKwp  = pKwp;
+  viewProd = pProd;
+
+  const card = document.getElementById('centraleKwc');
+  if (card) card.innerHTML =
+    `Vous pourriez installer jusqu'à <strong>${pKwp.toLocaleString('fr')} kWp</strong> de panneaux solaires`;
+
+  calc();
 }
 
 function flash(id) {
@@ -471,7 +569,7 @@ function render() {
       </div>
 
       <div class="centrale-card">
-        <div class="centrale-kwc">
+        <div class="centrale-kwc" id="centraleKwc">
           Vous pourriez installer jusqu'à
           <strong>${pKwp.toLocaleString('fr')} kWp</strong>
           de panneaux solaires
@@ -518,6 +616,11 @@ function render() {
           <div class="sweetspot-bar-fill" id="sweetFill" style="width:5%; background:#334155"></div>
         </div>
         <div class="sweetspot-sub" id="sweetSub">Renseignez vos paramètres pour voir si le projet est adapté à votre profil.</div>
+      </div>
+
+      <div class="opt-banner" id="optBanner">
+        <div class="opt-banner-text" id="optBannerText"></div>
+        <button class="opt-btn" id="optBannerBtn"></button>
       </div>
 
       <div class="cta-wrap">
