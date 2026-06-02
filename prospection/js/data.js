@@ -1,5 +1,14 @@
 // GeoJSON parsing, score computation, and data loading.
 
+// ── Address helpers ───────────────────────────────────────────────────────
+
+/** Extract commune from "175 boulevard Gustave Flaubert 63000 Clermont-Ferrand" */
+function _extractCommune(adresse) {
+  if (!adresse) return '';
+  const match = adresse.match(/\d{5}\s+(.+)$/);
+  return match ? match[1].trim() : '';
+}
+
 // ── Geometry helpers ──────────────────────────────────────────────────────
 function _polygonCentroid(ring) {
   // ring: [[lng, lat], ...] — handles closed rings (first == last)
@@ -50,45 +59,32 @@ function _parseFeature(feature, index) {
   const rawStatus  = (p.status || p.statut || 'new').toLowerCase();
   const status     = STATUS_MAP[rawStatus] || 'new';
 
+  const adresse = p.adresse || '';
+  const commune = _extractCommune(adresse) || p.nom_commune || p.commune || '';
+
   return {
     id:   index + 1,
     name: p.nom || p.name || `Point ${index + 1}`,
     lat,  lng,
     // Address
-    rue:         p.rue          || '',
-    code_postal: p.code_postal  || '',
-    commune:     p.nom_commune  || p.commune || '',
-    // Business
-    naf: p.naf || '',
+    adresse,
+    commune,
     // Solar potential
-    puissance_kwc:        parseFloat(p.puissance_kwc)        || 0,
-    production_mwh:       parseFloat(p.production_mwh)       || 0,
-    area:                 parseFloat(p.area)                  || 0,
-    consumption:          parseFloat(p.consumption)          || 0,
-    ratio_autoproduction: parseFloat(p.ratio_autoproduction) || 0,
-    priorite_score:       parseFloat(p.priorite_score)       || 0,
-    // Roof
-    orientation:    (p.orientation    && p.orientation    !== 'nsp') ? p.orientation    : '—',
-    toit_plat:      (p.toit_plat === 'True' || p.toit_plat === true) ? 'Plat' : (p.toit_plat && p.toit_plat !== 'False' && p.toit_plat !== false) ? 'Pentu' : '—',
-    mat_toit_class: (p.mat_toit_class && p.mat_toit_class !== 'nsp') ? p.mat_toit_class : '—',
-    // Economics
-    ca_potentiel:  parseFloat(p.CA_potentiel_k_euros) || 0,
-    payback_years: parseFloat(p.payback_years)        || 0,
-    // Contact
-    phone:        p.phone         || p.telephone || '',
-    email:        p.email         || '',
-    website:      p.website       || p.site      || '',
-    linkedin:     p.linkedin      || '',
-    director_name:p.director_name || p.directeur || '',
-    // Propriétaire
-    proprietaire: (p.proprietaire === true || p.proprietaire === 'True' || p.proprietaire === 'true' || p.proprietaire === 1),
+    puissance_kwc:  parseFloat(p.puissance_kwc)  || 0,
+    production_mwh: parseFloat(p.production_mwh) || 0,
+    area:           parseFloat(p.area)            || 0,
+    consumption:    parseFloat(p.consumption)     || 0,
+    priorite_score: parseFloat(p.score)           || parseFloat(p.priorite_score) || 0,
+    // Contact (editable, not in geojson by default)
+    contact_name:  p.contact_name  || '',
+    contact_email: p.contact_email || '',
+    contact_phone: p.contact_phone || '',
     // Status
     status,
     statusLabel: STATUS_LABELS[status],
     // Geometry
     polygonRing,  // [[lng,lat],...] or null
     polygonBbox,  // {minLat,maxLat,minLng,maxLng} or null
-    score: 0,
   };
 }
 

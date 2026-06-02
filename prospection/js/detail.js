@@ -70,22 +70,7 @@ function selectLead(id) {
 
   // Header
   document.getElementById('dp-name').textContent    = l.name;
-  document.getElementById('dp-address').textContent =
-    [l.rue, l.code_postal, l.commune].filter(Boolean).join(', ') || '—';
-
-  const nafEl = document.getElementById('dp-naf');
-  const sector = nafToSector(l.naf);
-  nafEl.textContent   = sector || (l.naf ? `NAF ${l.naf}` : '');
-  nafEl.style.display = (sector || l.naf) ? '' : 'none';
-
-  const propEl = document.getElementById('dp-proprietaire');
-  if (propEl) {
-    propEl.style.display = l.proprietaire ? '' : 'none';
-  }
-
-  // Potentiel économique
-  document.getElementById('dp-ca').textContent      = l.ca_potentiel  ? formatKeuros(l.ca_potentiel)  : '—';
-  document.getElementById('dp-payback').textContent = l.payback_years ? `${l.payback_years} ans`                                 : '—';
+  document.getElementById('dp-address').textContent = l.adresse || '—';
 
   // Potentiel solaire
   document.getElementById('dp-power').textContent       = l.puissance_kwc  ? `${l.puissance_kwc.toLocaleString('fr')} kWc`  : '—';
@@ -93,21 +78,16 @@ function selectLead(id) {
   document.getElementById('dp-surface').textContent     = l.area           ? `${Math.round(l.area).toLocaleString('fr')} m²` : '—';
   document.getElementById('dp-consumption').textContent = l.consumption    ? `${l.consumption.toFixed(1)} MWh`               : '—';
 
-  // Toiture
-  document.getElementById('dp-orientation').textContent = l.orientation    || '—';
-  document.getElementById('dp-toit-type').textContent   = l.toit_plat      || '—';
-  document.getElementById('dp-mat').textContent         = l.mat_toit_class || '—';
-
   // Contact
-  document.getElementById('dp-director').textContent  = l.director_name || '—';
-  document.getElementById('dp-phone').innerHTML       = l.phone    ? `<a href="tel:${l.phone}">${l.phone}</a>`   : '—';
-  document.getElementById('dp-email').innerHTML       = l.email    ? `<a href="mailto:${l.email}">${l.email}</a>` : '—';
-  document.getElementById('dp-website').innerHTML     = l.website  ? `<a href="https://${l.website.replace(/^https?:\/\//, '')}" target="_blank">${l.website}</a>` : '—';
-  document.getElementById('dp-linkedin').innerHTML    = l.linkedin ? `<a href="${l.linkedin}" target="_blank">Voir profil</a>` : '—';
+  document.getElementById('dp-contact-name').textContent  = l.contact_name  || '—';
+  document.getElementById('dp-phone').innerHTML = l.contact_phone
+    ? `<a href="tel:${l.contact_phone}">${l.contact_phone}</a>` : '—';
+  document.getElementById('dp-email').innerHTML = l.contact_email
+    ? `<a href="mailto:${l.contact_email}">${l.contact_email}</a>` : '—';
 
   // Action buttons
-  document.getElementById('dp-btn-phone').onclick = () => l.phone && window.open(`tel:${l.phone}`);
-  document.getElementById('dp-btn-email').onclick = () => l.email && window.open(`mailto:${l.email}`);
+  document.getElementById('dp-btn-phone').onclick = () => l.contact_phone && window.open(`tel:${l.contact_phone}`);
+  document.getElementById('dp-btn-email').onclick = () => l.contact_email && window.open(`mailto:${l.contact_email}`);
 
   // Liens cartouche Détails
   document.getElementById('dp-gmaps').href      = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;

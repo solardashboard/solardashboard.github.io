@@ -9,20 +9,17 @@ function exportCSV() {
   }
 
   const headers = [
-    'Nom', 'Rue', 'Code postal', 'Commune', 'NAF',
-    'Puissance kWc', 'Production MWh', 'Surface m2', 'Ratio autoprod',
-    'Orientation', 'Toit plat', 'Ombrages', 'Matériau',
-    'Directeur', 'Téléphone', 'Email', 'Site web', 'LinkedIn',
-    'Score', 'Lat', 'Lng',
+    'Nom', 'Adresse', 'Commune',
+    'Puissance kWc', 'Production MWh', 'Surface m2', 'Consommation MWh', 'Score',
+    'Contact', 'Téléphone', 'Email',
+    'Lat', 'Lng',
   ];
 
   const rows = toExport.map(l => [
-    l.name, l.rue, l.code_postal, l.commune, l.naf,
-    l.puissance_kwc, l.production_mwh, Math.round(l.area),
-    l.ratio_autoproduction, l.orientation, l.toit_plat,
-    l.shadings, l.mat_toit_class,
-    l.director_name, l.phone, l.email, l.website, l.linkedin,
-    l.score, l.lat, l.lng,
+    l.name, l.adresse, l.commune,
+    l.puissance_kwc, l.production_mwh, Math.round(l.area), l.consumption, l.priorite_score,
+    l.contact_name, l.contact_phone, l.contact_email,
+    l.lat, l.lng,
   ]);
 
   const csv = [headers, ...rows]

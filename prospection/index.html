@@ -85,7 +85,7 @@
         <div class="adv-filters-body" id="advFiltersBody" style="display:none">
 
           <div class="adv-filter-section">
-            <div class="adv-filter-label">Taille de chantier (k€)</div>
+            <div class="adv-filter-label">Puissance (kWc)</div>
             <div class="range-row">
               <div class="range-input-row">
                 <span class="range-lbl">Min</span>
@@ -98,21 +98,6 @@
                 <span class="range-val" id="caMaxLabel">—</span>
               </div>
             </div>
-          </div>
-
-          <div class="adv-filter-section">
-            <div class="adv-filter-label">
-              Secteur d'activité
-              <button class="sector-toggle-all" onclick="toggleAllSectors(this)">Tout désélect.</button>
-            </div>
-            <div class="sector-list" id="sectorList"></div>
-          </div>
-
-          <div class="adv-filter-section" id="filterProprietaireSection" style="display:none">
-            <label class="sector-check">
-              <input type="checkbox" id="filterProprietaireCb" onchange="onProprietaireFilterChange(this)" />
-              <span>Propriétaires vérifiés uniquement <span class="badge-proprietaire" style="margin-left:0.3rem">✓ vérifié</span></span>
-            </label>
           </div>
 
         </div>
@@ -131,7 +116,7 @@
           <div class="drop-icon">🗂️</div>
           <h3>Déposer un fichier GeoJSON</h3>
           <p>Propriétés attendues :<br/>
-          <code style="color:var(--sun);font-size:0.8rem">nom, puissance_kwc, production_mwh, area…</code></p>
+          <code style="color:var(--sun);font-size:0.8rem">nom, puissance_kwc, production_mwh, area, consumption, score, adresse</code></p>
         </div>
       </div>
 
@@ -141,8 +126,8 @@
           <div class="e-icon">🗺️</div>
           <h3>Aucune donnée chargée</h3>
           <p>Glissez-déposez un fichier <strong>.geojson</strong> n'importe où sur la page.<br/><br/>
-          Propriétés attendues : <code>nom, puissance_kwc, production_mwh, area, consumption,<br/>
-          ratio_autoproduction, orientation, toit_plat, shadings, phone, email…</code></p>
+          Propriétés attendues : <code>nom, puissance_kwc, production_mwh, area, consumption, score, adresse</code><br/>
+          Champs contact optionnels : <code>contact_name, contact_email, contact_phone</code></p>
         </div>
       </div>
 
@@ -156,10 +141,6 @@
           <div class="detail-tag">☀️ Fiche prospect</div>
           <div class="detail-name" id="dp-name"></div>
           <div class="detail-address" id="dp-address"></div>
-          <div class="detail-badges">
-            <span class="badge-naf" id="dp-naf"></span>
-            <span class="badge-proprietaire" id="dp-proprietaire" style="display:none">✓ Propriétaire vérifié</span>
-          </div>
         </div>
 
         <div class="detail-body">
@@ -183,14 +164,6 @@
             <a class="detail-action" id="dp-streetview" href="#" target="_blank">🚶 Street View</a>
           </div>
 
-          <div class="detail-section detail-section-eco">
-            <div class="detail-section-title">💰 Potentiel économique</div>
-            <div class="detail-grid">
-              <div class="detail-field"><div class="detail-field-label">Valeur chantier</div><div class="detail-field-val" id="dp-ca"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Retour sur invest.</div><div class="detail-field-val" id="dp-payback"></div></div>
-            </div>
-          </div>
-
           <div class="detail-section">
             <div class="detail-section-title">⚡ Potentiel solaire</div>
             <div class="detail-grid">
@@ -202,24 +175,13 @@
           </div>
 
           <div class="detail-section">
-            <div class="detail-section-title">🏗️ Toiture</div>
-            <div class="detail-grid">
-              <div class="detail-field"><div class="detail-field-label">Orientation</div><div class="detail-field-val" id="dp-orientation"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Type</div><div class="detail-field-val" id="dp-toit-type"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Matériau</div><div class="detail-field-val" id="dp-mat"></div></div>
-            </div>
-          </div>
-
-          <div class="detail-section">
             <div class="detail-section-title">👤 Contact</div>
             <div class="detail-grid cols-1">
-              <div class="detail-field"><div class="detail-field-label">Directeur</div><div class="detail-field-val" id="dp-director"></div></div>
+              <div class="detail-field"><div class="detail-field-label">Nom</div><div class="detail-field-val" id="dp-contact-name"></div></div>
             </div>
             <div class="detail-grid" style="margin-top:0.5rem">
               <div class="detail-field"><div class="detail-field-label">Téléphone</div><div class="detail-field-val" id="dp-phone"></div></div>
               <div class="detail-field"><div class="detail-field-label">Email</div><div class="detail-field-val" id="dp-email"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Site web</div><div class="detail-field-val" id="dp-website"></div></div>
-              <div class="detail-field"><div class="detail-field-label">LinkedIn</div><div class="detail-field-val" id="dp-linkedin"></div></div>
             </div>
           </div>
 
@@ -305,6 +267,14 @@
           <div class="sizer-field">
             <label class="sizer-label">Hausse annuelle élec. — <span id="sizerHausseVal">3,0%</span></label>
             <input type="range" class="sizer-range" id="sizerHausse" min="0" max="10" value="3" step="0.5" oninput="calcSizing()" />
+          </div>
+
+          <div class="sizer-field">
+            <label class="sizer-label">Tarif de rachat du surplus</label>
+            <div class="sizer-input-row">
+              <input type="number" id="sizerPrixRachat" min="0" value="83" oninput="calcSizing()" />
+              <span class="sizer-unit">€/MWh</span>
+            </div>
           </div>
 
 <div class="sizer-results">

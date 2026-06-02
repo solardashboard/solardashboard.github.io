@@ -19,9 +19,9 @@ function openLightbox(openSizer = false) {
 
   // Contact links + liens géo
   const contacts = [];
-  if (l.phone)    contacts.push(`<a href="tel:${l.phone}" class="lb-contact-link">📞 ${l.phone}</a>`);
-  if (l.email)    contacts.push(`<a href="mailto:${l.email}" class="lb-contact-link">✉️ ${l.email}</a>`);
-  if (l.linkedin) contacts.push(`<a href="${l.linkedin}" target="_blank" class="lb-contact-link">in LinkedIn</a>`);
+  if (l.contact_name)  contacts.push(`<span class="lb-contact-link">👤 ${l.contact_name}</span>`);
+  if (l.contact_phone) contacts.push(`<a href="tel:${l.contact_phone}" class="lb-contact-link">📞 ${l.contact_phone}</a>`);
+  if (l.contact_email) contacts.push(`<a href="mailto:${l.contact_email}" class="lb-contact-link">✉️ ${l.contact_email}</a>`);
   contacts.push(`<a href="https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}" target="_blank" class="lb-contact-link">📍 Google Maps</a>`);
   contacts.push(`<a href="https://www.google.com/maps?q=&layer=c&cbll=${l.lat},${l.lng}" target="_blank" class="lb-contact-link">🚶 Street View</a>`);
   document.getElementById('lb-contacts').innerHTML = contacts.join('');
@@ -32,9 +32,8 @@ function openLightbox(openSizer = false) {
   document.getElementById('sizerPuissance').value = l.puissance_kwc ? l.puissance_kwc            : '';
   document.getElementById('sizerPrixElec').value  = 160;
 
-  const autoconsoNaf = nafToAutoconso(l.naf);
-  document.getElementById('sizerAutoconso').value          = Math.round(autoconsoNaf * 100);
-  document.getElementById('sizerAutoconsoVal').textContent = Math.round(autoconsoNaf * 100) + '%';
+  document.getElementById('sizerAutoconso').value          = 60;
+  document.getElementById('sizerAutoconsoVal').textContent = '60%';
 
   document.getElementById('sizerHausse').value          = 3;
   document.getElementById('sizerHausseVal').textContent = '3,0%';
@@ -90,11 +89,12 @@ function calcSizing(source) {
     document.getElementById('sizerPuissance').value = derived;
   }
 
-  const kwc       = parseFloat(document.getElementById('sizerPuissance').value) || 0;
-  const consoMwh  = parseFloat(document.getElementById('sizerConso').value)     || 0; // MWh/an (label = MWh/an)
-  const prixElec  = parseFloat(document.getElementById('sizerPrixElec').value)  || 0;
-  const autoconso = parseFloat(document.getElementById('sizerAutoconso').value) / 100; // fraction slider
-  const hausse    = parseFloat(document.getElementById('sizerHausse').value)    / 100; // fraction
+  const kwc        = parseFloat(document.getElementById('sizerPuissance').value)  || 0;
+  const consoMwh   = parseFloat(document.getElementById('sizerConso').value)      || 0;
+  const prixElec   = parseFloat(document.getElementById('sizerPrixElec').value)   || 0;
+  const prixRachat = parseFloat(document.getElementById('sizerPrixRachat').value) || 0;
+  const autoconso  = parseFloat(document.getElementById('sizerAutoconso').value) / 100;
+  const hausse     = parseFloat(document.getElementById('sizerHausse').value)    / 100;
 
   document.getElementById('sizerAutoconsoVal').textContent = Math.round(autoconso * 100) + '%';
   document.getElementById('sizerHausseVal').textContent    = (hausse * 100).toFixed(1).replace('.', ',') + '%';
@@ -105,34 +105,33 @@ function calcSizing(source) {
     return;
   }
 
-  // CA : 1 100 €/kWc (formule du modèle)
-  const ca_k       = kwc * 1.1;        // k€
-  const investE    = ca_k * 1000;      // €
+  // CA : 1 100 €/kWc
+  const ca_k    = kwc * 1.1;
+  const investE = ca_k * 1000;
 
-  // Production : proportionnelle à la puissance saisie
-  // On utilise la production réelle du site si disponible, sinon 1 100 kWh/kWc/an
   const prodMWh = (l.production_mwh > 0 && l.puissance_kwc > 0)
     ? l.production_mwh * (kwc / l.puissance_kwc)
     : kwc * 1.1;
 
-  // Taux d'autoconsommation effectif :
-  //   si conso < production → on ne peut pas autoconsommer plus que conso/prod
-  //   si conso >= production → le slider s'applique tel quel
   const autoconsoEff = (consoMwh > 0 && prodMWh > 0)
     ? Math.min(autoconso, consoMwh / prodMWh)
     : autoconso;
 
-  // Payback cumulatif (même algo que le modèle Python) :
-  //   Σ production × (1−0.5%)^t × autoconso_eff × prix_elec × (1+hausse)^t ≥ invest
-  const DEGR = 0.005;
+  // Payback cumulatif avec autoconso + revente surplus (−2%/an)
+  const DEGR        = 0.005;
+  const RACHAT_DEGR = 0.02;
   let cumul = 0, payback = null;
   for (let t = 0; t < 50; t++) {
-    cumul += prodMWh * Math.pow(1 - DEGR, t) * autoconsoEff * prixElec * Math.pow(1 + hausse, t);
+    const prod_t      = prodMWh * Math.pow(1 - DEGR, t);
+    const eco_auto    = prod_t * autoconsoEff * prixElec * Math.pow(1 + hausse, t);
+    const eco_surplus = prod_t * (1 - autoconsoEff) * prixRachat * Math.pow(1 - RACHAT_DEGR, t);
+    cumul += eco_auto + eco_surplus;
     if (cumul >= investE) { payback = t + 1; break; }
   }
 
-  // Économie année 1
-  const ecoAn1 = prodMWh * autoconsoEff * prixElec;
+  // Économie + revente année 1
+  const ecoAn1 = prodMWh * autoconsoEff * prixElec
+               + prodMWh * (1 - autoconsoEff) * prixRachat;
 
   document.getElementById('srCA').textContent      = formatKeuros(ca_k);
   document.getElementById('srPayback').textContent = payback ? `${payback} ans` : '> 50 ans';

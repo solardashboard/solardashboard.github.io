@@ -32,16 +32,18 @@ async function _drawBreakevenChart(ctx, accentHex) {
   const CH = H - PAD.top - PAD.bottom;
 
   // ── Données ────────────────────────────────────────────────────────────────
-  const DEGR    = 0.005;
-  const nYears  = 25;
-  const autoEff = ctx.autoconsoEff / 100;
+  const DEGR        = 0.005;
+  const RACHAT_DEGR = 0.02;
+  const nYears      = 25;
+  const autoEff     = ctx.autoconsoEff / 100;
 
-  // Économies annuelles cumulées
+  // Économies annuelles cumulées (autoconso + surplus revendu)
   const cumSav = [0];
   for (let t = 1; t <= nYears; t++) {
-    const save = ctx.prodMWh * Math.pow(1 - DEGR, t - 1) * autoEff
-               * ctx.prixElec * Math.pow(1 + ctx.hausse, t - 1);
-    cumSav.push(cumSav[t - 1] + save);
+    const prod_t      = ctx.prodMWh * Math.pow(1 - DEGR, t - 1);
+    const eco_auto    = prod_t * autoEff * ctx.prixElec * Math.pow(1 + ctx.hausse, t - 1);
+    const eco_surplus = prod_t * (1 - autoEff) * ctx.prixRachat * Math.pow(1 - RACHAT_DEGR, t - 1);
+    cumSav.push(cumSav[t - 1] + eco_auto + eco_surplus);
   }
 
   const investE = ctx.investE;
@@ -184,11 +186,12 @@ function getLeadContext(lead) {
   if (!lead) return null;
 
   // Lecture de l'état courant du sizer (DOM → valeurs)
-  const kwc       = parseFloat(document.getElementById('sizerPuissance').value) || 0;
-  const consoMwh  = parseFloat(document.getElementById('sizerConso').value)     || 0;
-  const prixElec  = parseFloat(document.getElementById('sizerPrixElec').value)  || 0;
-  const autoconso = parseFloat(document.getElementById('sizerAutoconso').value) / 100;
-  const hausse    = parseFloat(document.getElementById('sizerHausse').value)    / 100;
+  const kwc        = parseFloat(document.getElementById('sizerPuissance').value)  || 0;
+  const consoMwh   = parseFloat(document.getElementById('sizerConso').value)      || 0;
+  const prixElec   = parseFloat(document.getElementById('sizerPrixElec').value)   || 0;
+  const prixRachat = parseFloat(document.getElementById('sizerPrixRachat').value) || 0;
+  const autoconso  = parseFloat(document.getElementById('sizerAutoconso').value) / 100;
+  const hausse     = parseFloat(document.getElementById('sizerHausse').value)    / 100;
 
   // Reproduction de l'algo calcSizing
   const ca_k    = kwc * 1.1;
@@ -202,31 +205,36 @@ function getLeadContext(lead) {
     ? Math.min(autoconso, consoMwh / prodMWh)
     : autoconso;
 
-  const DEGR = 0.005;
+  const DEGR        = 0.005;
+  const RACHAT_DEGR = 0.02;
   let cumul = 0, payback = null;
   for (let t = 0; t < 50; t++) {
-    cumul += prodMWh * Math.pow(1 - DEGR, t) * autoconsoEff * prixElec * Math.pow(1 + hausse, t);
+    const prod_t      = prodMWh * Math.pow(1 - DEGR, t);
+    const eco_auto    = prod_t * autoconsoEff * prixElec * Math.pow(1 + hausse, t);
+    const eco_surplus = prod_t * (1 - autoconsoEff) * prixRachat * Math.pow(1 - RACHAT_DEGR, t);
+    cumul += eco_auto + eco_surplus;
     if (cumul >= investE) { payback = t + 1; break; }
   }
 
-  const ecoAn1 = prodMWh * autoconsoEff * prixElec;
+  const ecoAn1 = prodMWh * autoconsoEff * prixElec
+               + prodMWh * (1 - autoconsoEff) * prixRachat;
 
   return {
     // Informations prospect
-    nomProspect:  lead.name     || '',
-    commune:      lead.commune  || '',
-    adresse:      lead.address  || '',
-    surface:      lead.area     ? Math.round(lead.area) : null,
-    orientation:  lead.orientation || '',
-    toitType:     lead.toit_plat ? 'Toiture plate' : 'Toiture inclinée',
-    materiau:     lead.materiau || '',
-    naf:          lead.naf     || '',
-    secteur:      lead.secteur || lead.naf_label || '',
+    nomProspect:  lead.name    || '',
+    commune:      lead.commune || '',
+    adresse:      lead.adresse || '',
+    surface:      lead.area    ? Math.round(lead.area) : null,
+    // Contact
+    contactName:  lead.contact_name  || '',
+    contactEmail: lead.contact_email || '',
+    contactPhone: lead.contact_phone || '',
 
     // Inputs sizer
     kwc,
     consoMwh,
     prixElec,
+    prixRachat,
     autoconsoPct: Math.round(autoconso * 100),
     hausse,
 
@@ -500,7 +508,6 @@ async function generateProposal() {
         keyValue('Entreprise', ctx.nomProspect),
         keyValue('Commune', ctx.commune),
         ...(ctx.surface   ? [keyValue('Surface de toiture', `${ctx.surface.toLocaleString('fr')} m\u00b2`)] : []),
-        ...(ctx.orientation ? [keyValue('Orientation', ctx.orientation)] : []),
         keyValue('Type de toiture', ctx.toitType),
         ...(ctx.materiau  ? [keyValue('Mat\u00e9riau', ctx.materiau)] : []),
         ...(ctx.secteur   ? [keyValue("Secteur d\u2019activit\u00e9", ctx.secteur)] : []),
@@ -517,6 +524,7 @@ async function generateProposal() {
         hypothesisTable([
           ["Prix de l\u2019\u00e9lectricit\u00e9",                              `${ctx.prixElec} \u20ac/MWh`],
           ["Hausse annuelle du prix de l\u2019\u00e9lectricit\u00e9",           `${(ctx.hausse * 100).toFixed(1).replace('.', ',')} %/an`],
+          ["Tarif de rachat du surplus",                                         `${ctx.prixRachat} \u20ac/MWh (\u22122\u00a0%/an)`],
           ["Taux d\u2019autoconsommation cible",                                `${ctx.autoconsoPct}\u00a0%`],
           ["Consommation annuelle du site",                                      ctx.consoMwh > 0 ? `${ctx.consoMwh.toLocaleString('fr')} MWh/an` : '—'],
           ["D\u00e9gradation annuelle des panneaux",                            "0,5\u00a0%/an"],

@@ -10,21 +10,15 @@ function formatKeuros(k, suffix = '') {
 function quartileClass(q) { return `score-q${q}`; }
 
 // ── Advanced filter state ─────────────────────────────────────────────────
-let _caMin = 0, _caMax = Infinity;
-let _activeSectors    = null;  // null = all; otherwise Set of active sector names
-let _filterProprietaire = false; // true = show only propriétaires vérifiés
-
-function _leadSector(l) { return nafToSector(l.naf) || 'Autre'; }
+let _kwcMin = 0, _kwcMax = Infinity;
 
 function filteredLeads() {
   return State.leads.filter(l => {
-    const matchFilter  = State.currentFilter === 'all'
+    const matchFilter = State.currentFilter === 'all'
       || (State.currentFilter === 'saved' && State.savedIds.has(l.id));
-    const matchSearch  = l.name.toLowerCase().includes(State.currentSearch.toLowerCase());
-    const matchCA      = l.ca_potentiel >= _caMin && l.ca_potentiel <= _caMax;
-    const matchSector  = !_activeSectors || _activeSectors.has(_leadSector(l));
-    const matchProp    = !_filterProprietaire || l.proprietaire === true;
-    return matchFilter && matchSearch && matchCA && matchSector && matchProp;
+    const matchSearch = l.name.toLowerCase().includes(State.currentSearch.toLowerCase());
+    const matchKwc    = l.puissance_kwc >= _kwcMin && l.puissance_kwc <= _kwcMax;
+    return matchFilter && matchSearch && matchKwc;
   });
 }
 
@@ -34,50 +28,28 @@ function renderFilters() {
   if (!panel) return;
   panel.style.display = '';
 
-  // CA range — use raw values from leads
-  const cas   = State.leads.map(l => l.ca_potentiel).filter(v => v > 0);
-  const caMin = cas.length ? Math.floor(Math.min(...cas)) : 0;
-  const caMax = cas.length ? Math.ceil(Math.max(...cas))  : 10000;
-  const step  = Math.max(1, Math.round((caMax - caMin) / 200));
+  // Puissance kWc range
+  const kwcs   = State.leads.map(l => l.puissance_kwc).filter(v => v > 0);
+  const kwcMin = kwcs.length ? Math.floor(Math.min(...kwcs)) : 0;
+  const kwcMax = kwcs.length ? Math.ceil(Math.max(...kwcs))  : 5000;
+  const step   = Math.max(1, Math.round((kwcMax - kwcMin) / 200));
 
-  _caMin = caMin; _caMax = caMax;
+  _kwcMin = kwcMin; _kwcMax = kwcMax;
 
   ['caRangeMin', 'caRangeMax'].forEach(id => {
     const el = document.getElementById(id);
-    el.min = caMin; el.max = caMax; el.step = step;
+    el.min = kwcMin; el.max = kwcMax; el.step = step;
   });
-  document.getElementById('caRangeMin').value = caMin;
-  document.getElementById('caRangeMax').value = caMax;
+  document.getElementById('caRangeMin').value = kwcMin;
+  document.getElementById('caRangeMax').value = kwcMax;
   _updateRangeLabels();
-
-  // Sectors — all unique, sorted, all checked by default
-  const sectors = [...new Set(State.leads.map(_leadSector))].sort((a, b) => a.localeCompare(b, 'fr'));
-  _activeSectors = new Set(sectors);
-
-  document.getElementById('sectorList').innerHTML = sectors.map(s => `
-    <label class="sector-check">
-      <input type="checkbox" value="${s}" checked onchange="onSectorChange(this)" />
-      <span>${s}</span>
-    </label>`).join('');
-
-  // Reset toggle-all button label
-  const btn = document.querySelector('.sector-toggle-all');
-  if (btn) btn.textContent = 'Tout désélect.';
-
-  // Propriétaire filter — only show if at least one lead has the field set
-  const hasProprietaireData = State.leads.some(l => l.proprietaire === true);
-  const propSection = document.getElementById('filterProprietaireSection');
-  if (propSection) propSection.style.display = hasProprietaireData ? '' : 'none';
-  _filterProprietaire = false;
-  const propCb = document.getElementById('filterProprietaireCb');
-  if (propCb) propCb.checked = false;
 }
 
 function _updateRangeLabels() {
   const vMin = +document.getElementById('caRangeMin').value;
   const vMax = +document.getElementById('caRangeMax').value;
-  document.getElementById('caMinLabel').textContent = formatKeuros(vMin);
-  document.getElementById('caMaxLabel').textContent = formatKeuros(vMax);
+  document.getElementById('caMinLabel').textContent = `${vMin.toLocaleString('fr')} kWc`;
+  document.getElementById('caMaxLabel').textContent = `${vMax.toLocaleString('fr')} kWc`;
 }
 
 function _setFilterDirty(dirty) {
@@ -90,41 +62,14 @@ function onRangeInput() {
   const rMax = document.getElementById('caRangeMax');
   if (+rMin.value > +rMax.value) rMin.value = rMax.value;
   if (+rMax.value < +rMin.value) rMax.value = rMin.value;
-  _caMin = +rMin.value;
-  _caMax = +rMax.value;
+  _kwcMin = +rMin.value;
+  _kwcMax = +rMax.value;
   _updateRangeLabels();
   _setFilterDirty(true);
   renderList();
 }
 
-function onSectorChange(cb) {
-  if (cb.checked) _activeSectors.add(cb.value);
-  else            _activeSectors.delete(cb.value);
-  _setFilterDirty(true);
-  renderList();
-}
-
-function onProprietaireFilterChange(cb) {
-  _filterProprietaire = cb.checked;
-  _setFilterDirty(cb.checked);
-  renderList();
-}
-
-function toggleAllSectors(btn) {
-  const checks = document.querySelectorAll('#sectorList input[type=checkbox]');
-  const allChecked = [...checks].every(c => c.checked);
-  checks.forEach(c => {
-    c.checked = !allChecked;
-    if (c.checked) _activeSectors.add(c.value);
-    else           _activeSectors.delete(c.value);
-  });
-  btn.textContent = allChecked ? 'Tout sélect.' : 'Tout désélect.';
-  _setFilterDirty(true);
-  renderList();
-}
-
 function resetFilters() {
-  // Re-run renderFilters which resets everything to defaults
   renderFilters();
   _setFilterDirty(false);
   renderList();
@@ -149,13 +94,7 @@ function renderList() {
     ? 'Aucun prospect'
     : `${fl.length} prospect${fl.length > 1 ? 's' : ''}`;
 
-  const totalCA = State.leads.reduce((sum, l) => sum + (l.ca_potentiel || 0), 0);
-  if (totalCA > 0 && totalChip) {
-    totalChip.textContent   = formatKeuros(totalCA);
-    totalChip.style.display = '';
-  } else if (totalChip) {
-    totalChip.style.display = 'none';
-  }
+  if (totalChip) totalChip.style.display = 'none';
 
   // Sync carte : n'afficher que les markers filtrés
   syncMapToFilter(fl.map(l => l.id));
@@ -182,7 +121,7 @@ function renderList() {
     <div class="lead-item ${State.selectedId === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
       <div class="lead-score ${quartileClass(l.quartile)}">#${l.rank}</div>
       <div class="lead-info">
-        <div class="lead-name">${l.name}${l.proprietaire ? '<span class="lead-badge-proprietaire">✓ vérifié</span>' : ''}</div>
+        <div class="lead-name">${l.name}</div>
         <div class="lead-meta">
           ${l.puissance_kwc ? l.puissance_kwc.toLocaleString('fr') + ' kWc' : '—'} · ${l.commune || '—'}
         </div>

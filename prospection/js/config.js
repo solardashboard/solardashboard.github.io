@@ -19,20 +19,7 @@ const CLIENTS = {
     logoUrl:     null,
     website:     null,
   },
-  'demovoltare': {
-    id:          'voltare',
-    name:        'Voltare',
-    accentColor: '16A34A',   // vert — à affiner avec leur charte
-    logoUrl:     'https://www.voltare.fr/wp-content/uploads/2022/04/logo-voltare.png',
-    website:     'https://www.voltare.fr',
-  },
-  'demosolarock': {
-    id:          'solarock',
-    name:        'SolaRock',
-    accentColor: 'F59E0B',   // amber — à personnaliser
-    logoUrl:     null,
-    website:     null,
-  },
+
 };
 
 const CONFIG = {
