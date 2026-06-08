@@ -601,6 +601,28 @@
 
   <!-- Consentement RGPD + Clarity (chargé uniquement après accord) -->
   <script src="consent.js" defer></script>
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "SolarDashboard",
+    "url": "https://www.solardashboard.fr",
+    "logo": "https://www.solardashboard.fr/assets/icon.png",
+    "description": "SolarDashboard connecte les propriétaires de toitures et les installateurs solaires autour de projets déjà qualifiés grâce à l'intelligence artificielle.",
+    "founder": {
+      "@type": "Person",
+      "name": "Gabriel Kasmi"
+    },
+    "foundingLocation": {
+      "@type": "Place",
+      "name": "France"
+    },
+    "sameAs": [
+      "https://gabrielkasmi.github.io/deeppvmapper"
+    ]
+  }
+  </script>
 </head>
 <body>
 
