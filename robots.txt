@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /prospection/
+Disallow: /dimensionnement/
+Disallow: /assistant/
+
+Sitemap: https://www.solardashboard.fr/sitemap.xml
