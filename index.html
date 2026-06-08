@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SolarDashboard — Prospection solaire C&I par IA</title>
+  <title>Connecter des projets solaires | SolarDashboard</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
@@ -143,7 +143,7 @@
     .conviction-inner { max-width: 660px; }
     .conviction-text {
       font-size: 1.08rem; color: var(--muted); line-height: 1.85;
-      text-align: left;
+      text-align: center;
       margin-bottom: 1.5rem;
     }
     .conviction-text a {
@@ -158,6 +158,11 @@
       margin-top: 1.25rem;
       letter-spacing: -0.01em;
     }
+    .conviction-footnote {
+      font-size: 0.74rem; color: var(--muted); opacity: 0.6;
+      text-align: center; margin-top: 2rem; letter-spacing: 0.01em;
+    }
+    .conviction-footnote a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
     /* Reveal-on-scroll */
     .reveal {
@@ -169,6 +174,8 @@
     .reveal.delay-1 { transition-delay: 0.12s; }
     .reveal.delay-2 { transition-delay: 0.26s; }
     .reveal.delay-3 { transition-delay: 0.4s; }
+    .reveal.delay-4 { transition-delay: 0.54s; }
+    .reveal.delay-5 { transition-delay: 0.68s; }
 
     /* Glow background */
     .hero::before {
@@ -600,20 +607,33 @@
   <div class="conviction-inner">
     <div class="section-label reveal">Pourquoi SolarDashboard</div>
     <p class="conviction-text reveal delay-1">
-      5 % des toitures qui pourraient accueillir des panneaux solaires le font
-      aujourd'hui en France. Le verrou n'est ni technique, ni financier : c'est
-      l'information et la rencontre. Des propriétaires traités comme des numéros dans
-      des campagnes de masse, des installateurs débordés qui n'ont pas le temps
-      de bien prospecter.
+      <b>10 % des toits européens</b> sont aujourd'hui équipés de panneaux solaires,
+      alors qu'ils pourraient, à eux seuls, <b>couvrir près de la moitié de nos
+      besoins en électricité<sup>1</sup></b>. Une énergie décarbonée, souveraine,
+      et déjà là.
     </p>
     <p class="conviction-text reveal delay-2">
-      C'est ce problème que j'ai observé en travaillant sur la cartographie par
-      intelligence artificielle des installations photovoltaïques existantes
-      (<a href="https://gabrielkasmi.github.io/deeppvmapper" target="_blank" rel="noopener">DeepPVMapper</a>) 
-      et celui que SolarDashboard est conçu pour résoudre : lever ces frictions
-      grâce à l'IA, pour que chaque rencontre parte d'un projet compris.
+      Le verrou n'est ni technique ni économique : <b>il est informationnel</b>. Trop
+      de propriétaires ignorent l'intérêt qu'ils auraient à se lancer, et trop
+      d'installateurs, pris dans une logique de volume, passent plus de temps à
+      qualifier des projets qu'à les réaliser.
     </p>
-    <div class="conviction-sign reveal delay-3">— Gabriel Kasmi, co-fondateur de SolarDashboard</div>
+    <p class="conviction-text reveal delay-3">
+      SolarDashboard a pour mission de connecter les propriétaires de toitures
+      et les installateurs autour de <b>projets déjà compris</b> : le propriétaire
+      sait ce qu'il a à gagner et la faisabilité est établie, l'installateur
+      n'a plus qu'à passer à la réalisation.
+    </p>
+    <p class="conviction-text reveal delay-4">
+      Cette conviction, je la dois à mon travail sur
+      <a href="https://gabrielkasmi.github.io/deeppvmapper" target="_blank" rel="noopener">DeepPVMapper</a>,
+      un outil de cartographie open source qui m'a permis d'identifier
+      500 000 installations existantes en France.
+    </p>
+    <div class="conviction-sign reveal delay-5">— Gabriel Kasmi, co-fondateur de SolarDashboard</div>
+    <div class="conviction-footnote reveal delay-5">
+      1. Kakoulaki, G. et al., <em>Mapping Europe's rooftop photovoltaic potential with a building-level database</em>, Nature Energy 11, 324–333 (2026).
+    </div>
   </div>
 </section>
 
