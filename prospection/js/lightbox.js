@@ -92,7 +92,15 @@ function calcSizing(source) {
   const kwc        = parseFloat(document.getElementById('sizerPuissance').value)  || 0;
   const consoMwh   = parseFloat(document.getElementById('sizerConso').value)      || 0;
   const prixElec   = parseFloat(document.getElementById('sizerPrixElec').value)   || 0;
-  const prixRachat = parseFloat(document.getElementById('sizerPrixRachat').value) || 0;
+
+  // Tarif S21 auto-sélectionné selon puissance (en vigueur juil. 2026)
+  const rachatAuto = kwc >= 100 ? 95 : 11;
+  const rachatEl   = document.getElementById('sizerPrixRachat');
+  if (rachatEl && (source === 'surface' || source === undefined || !rachatEl.dataset.userEdited)) {
+    rachatEl.value = rachatAuto;
+    rachatEl.dataset.userEdited = '';
+  }
+  const prixRachat = parseFloat(rachatEl?.value) || rachatAuto;
   const autoconso  = parseFloat(document.getElementById('sizerAutoconso').value) / 100;
   const hausse     = parseFloat(document.getElementById('sizerHausse').value)    / 100;
 

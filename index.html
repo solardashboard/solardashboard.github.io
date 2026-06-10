@@ -56,13 +56,11 @@
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 0.2rem;
+      display: flex; flex-direction: row; align-items: center; justify-content: space-between;
       padding: 0.85rem 2.5rem;
       background: rgba(15,23,42,0.8);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.06);
-      text-align: center;
       transform: translateY(-100%);
       opacity: 0;
       pointer-events: none;
@@ -97,8 +95,32 @@
       font-weight: 600;
       color: var(--muted);
       letter-spacing: 0.01em;
+      position: absolute; left: 50%; transform: translateX(-50%);
     }
     .nav-motto span { color: var(--sun-light); }
+    .nav-demo {
+      font-size: 0.82rem; font-weight: 700;
+      color: var(--dark);
+      text-decoration: none;
+      padding: 0.4rem 1rem;
+      background: linear-gradient(135deg, var(--sun), var(--sun-dark));
+      border-radius: 6px;
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 2px 12px rgba(245,158,11,0.3);
+    }
+    .nav-demo:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-demo {
+      background: transparent;
+      border: 1.5px solid rgba(245,158,11,0.5);
+      color: var(--sun-light);
+      font-weight: 600; font-size: 1rem;
+      padding: 0.85rem 2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .btn-demo:hover { background: rgba(245,158,11,0.08); border-color: var(--sun); transform: translateY(-2px); }
 
     /* ── HERO ── */
     .hero {
@@ -375,10 +397,13 @@
       padding: 0.55rem 0.85rem;
     }
     .pf-icon { font-size: 1rem; flex-shrink: 0; }
-    .path-card .btn-primary, .path-card .btn-accent {
+    .path-card .btn-primary, .path-card .btn-accent, .path-card .btn-demo {
       font-size: 0.95rem;
       padding: 0.8rem 1.8rem;
+      width: 100%;
+      justify-content: center;
     }
+    .path-card .btn-demo { margin-top: 0.6rem; }
 
     /* ── STATS ── */
     .stats {
@@ -632,6 +657,7 @@
       SolarDashboard
     </div>
     <div class="nav-motto">✦ <span>Connecter des projets solaires</span></div>
+    <a href="prospection/" class="nav-demo">Accéder à la démo</a>
   </nav>
 
 <!-- SECTION 1 — Motto -->
@@ -698,6 +724,7 @@
         <li><span class="pf-icon">🤝</span> Mise en relation directe avec des projets qualifiés</li>
       </ul>
       <a href="#" class="btn-primary" onclick="openInstallateurModal(); return false;">Renseignez vos critères</a>
+      <a href="prospection/" class="btn-demo">Accéder à la démo</a>
     </div>
     <div class="path-card">
       <div class="path-icon">🏠</div>

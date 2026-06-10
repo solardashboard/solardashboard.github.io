@@ -154,11 +154,22 @@ Ratio ≈ 1,02 à 48°N (Paris)
 
     <div class="card">
       <h3>💰 Calcul des économies an 1</h3>
-      <p>Les économies correspondent à l'énergie autoconsommée valorisée au prix d'achat de l'électricité :</p>
+      <p>Les économies combinent deux sources de valeur : l'électricité autoconsommée (évitée) et, si l'option est activée, la revente du surplus sur le réseau.</p>
       <div class="formula">
-Économies an 1 (€) = Énergie autoconsommée (MWh) × Prix électricité (€/MWh)
+Économies an 1 (€) = Énergie autoconsommée × Prix électricité
+                   + Surplus (MWh) × Tarif de rachat (€/MWh)
       </div>
-      <p>Le <strong>prix par défaut de 160 €/MWh</strong> reflète le tarif moyen constaté pour les clients C&I en 2024 (hors taxes récupérables). Ajustez-le selon votre contrat réel pour une estimation plus précise.</p>
+      <p>Le <strong>prix par défaut de 160 €/MWh</strong> reflète le tarif moyen constaté pour les clients C&I en 2024 (hors taxes récupérables). Ajustez-le selon votre contrat réel.</p>
+    </div>
+
+    <div class="card">
+      <h3>↩️ Tarif de rachat du surplus</h3>
+      <p>Lorsque l'option "Avec revente du surplus" est activée, l'électricité non autoconsommée est valorisée au tarif réglementé en vigueur (arrêté S21, en vigueur à partir de juillet 2026) :</p>
+      <ul>
+        <li><strong>Installations ≤ 100 kWc</strong> : 11 €/MWh — tarif de l'obligation d'achat (OA) fixé par la CRE, contrat sur 20 ans.</li>
+        <li><strong>Installations &gt; 100 kWc</strong> : 83 €/MWh — prix moyen observé dans les Appels d'Offres Simplifiés (AOS) CRE "Petit PV Bâtiment". Le plafond réglementaire est à 95 €/MWh ; la valeur retenue de 83 €/MWh est une hypothèse prudente basée sur les prix adjugés récents.</li>
+      </ul>
+      <p>Le tarif de rachat est appliqué avec une dégressivité de <strong>−2 %/an</strong> sur la durée du contrat, conformément aux conditions OA/AOS.</p>
     </div>
   </div>
 
@@ -190,8 +201,11 @@ Ratio ≈ 1,02 à 48°N (Paris)
         <li><strong>Dégradation des panneaux</strong> : −0,7 %/an de production</li>
       </ul>
       <div class="formula">
-Économies année t = Énergie autoconso(t) × Prix élec × (1+3%)^t
-Énergie autoconso(t) = min(Production × (1−0,7%)^t × 70%, Conso)
+Économies année t = Autoconso(t) × Prix élec × (1+3%)^t
+                 + Surplus(t) × Tarif rachat × (1−2%)^t
+
+Autoconso(t) = min(Production × (1−0,7%)^t × 70%, Conso)
+Surplus(t)   = Production × (1−0,7%)^t × (1 − taux autoconso)
 
 Payback = t tel que Σ Économies(t) ≥ Investissement
       </div>
@@ -207,14 +221,14 @@ Payback = t tel que Σ Économies(t) ≥ Investissement
       <h3>SolarDashboard — cartographie IA des toitures PV</h3>
       <p>SolarDashboard est une plateforme de prospection solaire qui analyse automatiquement les toitures à partir d'images satellites pour identifier les sites à fort potentiel photovoltaïque.</p>
       <p>Nous accompagnons les installateurs et développeurs solaires dans leur prospection C&I en leur fournissant des données de dimensionnement pré-qualifiées : surface exploitable, orientation, ombrage, consommation estimée.</p>
-      <p>La simulation que vous venez de consulter a été générée automatiquement à partir de l'analyse de votre site. Pour une étude complète et personnalisée, contactez-nous.</p>
+      <p>La simulation que vous venez de consulter a été générée automatiquement à partir de l'analyse de votre site. Pour une étude complète et personnalisée, <a href="mailto:gabriel@solardashboard.fr">contactez-nous</a>.</p>
     </div>
   </div>
 
 </div>
 
 <footer>
-  <a href="index.html">← Retour à la simulation</a> ·
+  <a href="javascript:history.back()">← Retour à la simulation</a> ·
   <a href="../legal.html">Mentions légales</a>
 </footer>
 

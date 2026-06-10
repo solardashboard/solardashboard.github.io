@@ -102,6 +102,34 @@
     .field label { font-size: 0.72rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
     .field-hint { font-size: 0.63rem; color: var(--dark-3); }
 
+    /* ── Rachat toggle ── */
+    .toggle-row {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .toggle-label {
+      display: flex; align-items: center; gap: 0.6rem;
+      cursor: pointer; user-select: none;
+      font-size: 0.78rem; font-weight: 600; color: var(--text);
+    }
+    .toggle-label input[type="checkbox"] { display: none; }
+    .toggle-switch {
+      width: 32px; height: 18px; border-radius: 9px; flex-shrink: 0;
+      background: var(--dark-3); border: 1px solid rgba(255,255,255,0.12);
+      position: relative; transition: background 0.2s;
+    }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--muted); transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-label input:checked ~ .toggle-switch {
+      background: rgba(245,158,11,0.25); border-color: rgba(245,158,11,0.5);
+    }
+    .toggle-label input:checked ~ .toggle-switch::after {
+      transform: translateX(14px); background: var(--sun);
+    }
+    .toggle-hint { font-size: 0.62rem; color: var(--dark-3); padding-left: 38px; }
+
     .input-wrap { display: flex; align-items: stretch; }
     .input-wrap input[type="number"] {
       flex: 1; min-width: 0;
@@ -279,6 +307,10 @@ const AUTOCONSO_CI   = 0.70;   // taux moyen autoconsommation C&I constaté
 const CA_PER_KWC     = 1.1;    // k€/kWp — coût installation C&I moyen
 const HAUSSE_DEFAULT = 0.03;   // +3 %/an hausse prix électricité
 const DEGR           = 0.007;  // 0.7 %/an dégradation panneaux
+const PRIX_RACHAT_SMALL = 0.011;  // €/kWh — tarif S21 ≤ 100 kWc (juil. 2026)
+const PRIX_RACHAT_LARGE = 0.083;  // €/kWh — prix moyen observé AOS > 100 kWc (plafond 95 €/MWh)
+const RACHAT_DEGR       = 0.02;   // −2 %/an dégressivité
+function prixRachat(kwp) { return kwp >= 100 ? PRIX_RACHAT_LARGE : PRIX_RACHAT_SMALL; }
 const IGN_WMS        = 'https://data.geopf.fr/wms-r';
 const IGN_LAYER      = 'ORTHOIMAGERY.ORTHOPHOTOS';
 
@@ -330,16 +362,24 @@ function sweetSub(score, payback) {
 
 // ── Calcul pour une config donnée (fonction pure) ────────────────────────────
 function calcFor(kwp, prod, facture) {
-  const prixElec  = facture / pConso;
-  const invest    = kwp * CA_PER_KWC * 1000;
-  const enAutoAn1 = Math.min(prod * AUTOCONSO_CI, pConso);
-  const ecoAn1    = enAutoAn1 * prixElec;
+  const withRachat = document.getElementById('toggleRachat')?.checked ?? true;
+  const pr         = prixRachat(kwp);
+  const prixElec   = facture / pConso;
+  const invest     = kwp * CA_PER_KWC * 1000;
+  const autoEff    = Math.min(AUTOCONSO_CI, pConso / prod);
+  const surplusAn1 = prod * (1 - autoEff);
+  const ecoAn1     = Math.min(prod * AUTOCONSO_CI, pConso) * prixElec
+                   + (withRachat ? surplusAn1 * pr : 0);
 
   let cumul = 0, payback = null;
   for (let t = 0; t < 50; t++) {
-    const prixT = prixElec * Math.pow(1 + HAUSSE_DEFAULT, t);
-    const prodT = prod * Math.pow(1 - DEGR, t);
-    const ecoT  = Math.min(prodT * AUTOCONSO_CI, pConso) * prixT;
+    const prixT    = prixElec * Math.pow(1 + HAUSSE_DEFAULT, t);
+    const prodT    = prod * Math.pow(1 - DEGR, t);
+    const ecoAutoT = Math.min(prodT * AUTOCONSO_CI, pConso) * prixT;
+    const ecoRachatT = withRachat
+      ? prodT * (1 - autoEff) * pr * Math.pow(1 - RACHAT_DEGR, t)
+      : 0;
+    const ecoT = ecoAutoT + ecoRachatT;
     if (cumul + ecoT >= invest) {
       payback = t + (invest - cumul) / ecoT;
       break;
@@ -362,11 +402,16 @@ function calc() {
   }
 
   const { ecoAn1, payback } = calcFor(viewKwp, viewProd, facture);
+  const withRachat = document.getElementById('toggleRachat')?.checked ?? true;
 
   flash('rEco');
   flash('rPayback');
   document.getElementById('rEco').textContent     = fmtEuros(ecoAn1) + '/an';
   document.getElementById('rPayback').textContent = fmtPayback(payback);
+  const subEl = document.getElementById('rEcoSub');
+  if (subEl) subEl.textContent = withRachat
+    ? 'autoconsommation + surplus revendu'
+    : 'électricité autoconsommée';
   updateSweet(payback);
   maybeShowOptBanner(payback, facture);
 }
@@ -593,11 +638,20 @@ function render() {
         <div class="field-hint">ajustez d'après votre dernière facture</div>
       </div>
 
+      <div class="toggle-row">
+        <label class="toggle-label" for="toggleRachat">
+          <input type="checkbox" id="toggleRachat" checked onchange="calc()" />
+          <span class="toggle-switch"></span>
+          Avec revente du surplus
+        </label>
+        <div class="toggle-hint">L'électricité non autoconsommée est rachetée selon le tarif réglementé en vigueur</div>
+      </div>
+
       <div class="kpi-duo">
         <div class="kpi-hero kpi-eco">
           <div class="kpi-hero-label">Économie annuelle sur votre facture</div>
           <div class="kpi-hero-val" id="rEco">—</div>
-          <div class="kpi-hero-sub">électricité autoconsommée</div>
+          <div class="kpi-hero-sub" id="rEcoSub">électricité autoconsommée</div>
         </div>
         <div class="kpi-hero kpi-payback">
           <div class="kpi-hero-label">Retour investissement</div>

@@ -189,7 +189,7 @@ function getLeadContext(lead) {
   const kwc        = parseFloat(document.getElementById('sizerPuissance').value)  || 0;
   const consoMwh   = parseFloat(document.getElementById('sizerConso').value)      || 0;
   const prixElec   = parseFloat(document.getElementById('sizerPrixElec').value)   || 0;
-  const prixRachat = parseFloat(document.getElementById('sizerPrixRachat').value) || 0;
+  const prixRachat = parseFloat(document.getElementById('sizerPrixRachat').value) || (kwc >= 100 ? 95 : 11);
   const autoconso  = parseFloat(document.getElementById('sizerAutoconso').value) / 100;
   const hausse     = parseFloat(document.getElementById('sizerHausse').value)    / 100;
 
