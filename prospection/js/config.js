@@ -1,25 +1,41 @@
-// ── Clarity tracking helper ───────────────────────────────────────────────
-// Fires a named Clarity event + optional string tag.
-// Safe to call before Clarity loads (queued internally by the SDK).
+// ── Tracking helper ─────────────────────────────────────────────────────────
+// Fires a named event : Clarity (comme avant) + une ligne dans la table
+// Supabase "events" (tracking interne, lié au compte/client précis).
 function _track(event, tagKey, tagValue) {
-  if (typeof clarity !== 'function') return;
-  clarity('event', event);
-  if (tagKey && tagValue !== undefined) clarity('set', tagKey, String(tagValue));
+  if (typeof clarity === 'function') {
+    clarity('event', event);
+    if (tagKey && tagValue !== undefined) clarity('set', tagKey, String(tagValue));
+  }
+  _logEventToSupabase(event, tagKey, tagValue);
 }
 
-// ── Clients ─────────────────────────────────────────────────────────────────
-// Chaque entrée = un mot de passe → config client.
-// accentColor : hex sans #, utilisé dans l'UI et dans la proposition .docx.
-// logoUrl     : URL publique du logo (PNG/SVG), null si non disponible.
-const CLIENTS = {
-  'solardashboard2026': {
-    id:          'admin',
-    name:        'SolarDashboard',
-    accentColor: 'F59E0B',   // amber par défaut
-    logoUrl:     null,
-    website:     null,
-  },
+// Best-effort, ne bloque et ne casse jamais l'UI (pas encore connecté,
+// supabaseClient pas encore chargé, offline, etc. -> on ignore l'erreur).
+async function _logEventToSupabase(event, tagKey, tagValue) {
+  if (typeof supabaseClient === 'undefined') return;
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+    await supabaseClient.from('events').insert({
+      user_id:    user.id,
+      scope_key:  window.CLIENT ? window.CLIENT.id : null,
+      event_type: event,
+      payload:    tagKey ? { [tagKey]: tagValue } : null,
+    });
+  } catch { /* silencieux */ }
+}
 
+// ── Supabase ────────────────────────────────────────────────────────────────
+// Les clients et leurs leads (geojson) sont maintenant côté Supabase, pas
+// codés en dur ici. Voir supabase/schema.sql pour le modèle (tables
+// clients/profiles + RLS storage) et supabase/README.md pour le setup.
+const SUPABASE_CONFIG = {
+  url:     'https://occceleohepinqnrbvxj.supabase.co',
+  anonKey: 'sb_publishable__RddFnBkyRwZSrDcxHgDAA_5egPKgPy',
+  // Login "métier" (ex: "voltare") converti en email pour Supabase Auth,
+  // qui exige un format email. Transparent pour l'utilisateur : il ne voit
+  // jamais ce domaine, il tape juste son login.
+  loginDomain: 'leads.solardashboard.app',
 };
 
 const CONFIG = {

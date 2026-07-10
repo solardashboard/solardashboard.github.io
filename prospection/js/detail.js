@@ -80,14 +80,20 @@ function selectLead(id) {
 
   // Contact
   document.getElementById('dp-contact-name').textContent  = l.contact_name  || '—';
-  document.getElementById('dp-phone').innerHTML = l.contact_phone
-    ? `<a href="tel:${l.contact_phone}">${l.contact_phone}</a>` : '—';
-  document.getElementById('dp-email').innerHTML = l.contact_email
-    ? `<a href="mailto:${l.contact_email}">${l.contact_email}</a>` : '—';
 
-  // Action buttons
-  document.getElementById('dp-btn-phone').onclick = () => l.contact_phone && window.open(`tel:${l.contact_phone}`);
-  document.getElementById('dp-btn-email').onclick = () => l.contact_email && window.open(`mailto:${l.contact_email}`);
+  const hasPhone   = !!l.contact_phone;
+  const hasEmail   = !!l.contact_email;
+  const phoneField = document.getElementById('dp-field-phone');
+  const emailField = document.getElementById('dp-field-email');
+  const contactRow = document.getElementById('dp-contact-row');
+
+  phoneField.style.display = hasPhone ? '' : 'none';
+  emailField.style.display = hasEmail ? '' : 'none';
+  contactRow.style.display = (hasPhone || hasEmail) ? '' : 'none';
+  contactRow.classList.toggle('cols-1', hasPhone !== hasEmail); // 1 seul champ visible -> pleine largeur
+
+  if (hasPhone) document.getElementById('dp-phone').innerHTML = `<a href="tel:${l.contact_phone}">${l.contact_phone}</a>`;
+  if (hasEmail) document.getElementById('dp-email').innerHTML = `<a href="mailto:${l.contact_email}">${l.contact_email}</a>`;
 
   // Liens cartouche Détails
   document.getElementById('dp-gmaps').href      = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;

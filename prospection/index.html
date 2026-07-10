@@ -21,6 +21,9 @@
   <!-- docx — génération Word client-side (bundlé localement) -->
   <script src="js/docx.iife.js"></script>
 
+  <!-- Supabase — auth + storage (leads scopés par client) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
   <!-- Consentement RGPD + Clarity (chargé uniquement après accord) -->
   <script src="../consent.js" defer></script>
 </head>
@@ -31,12 +34,32 @@
     <div class="gate-card">
       <img src="../assets/icon.png" class="gate-logo" alt="SolarDashboard" />
       <h2>SolarDashboard</h2>
-      <p>Accès restreint — entrez le mot de passe pour continuer.</p>
-      <input class="gate-input" id="gateInput" type="password"
-             placeholder="Mot de passe" autocomplete="off"
+      <p>Accès restreint — connecte-toi pour continuer.</p>
+      <input class="gate-input" id="gateLogin" type="text"
+             placeholder="Login" autocomplete="username"
              onkeydown="if(event.key==='Enter') checkPassword()" />
-      <button class="gate-btn" onclick="checkPassword()">Accéder →</button>
+      <input class="gate-input" id="gateInput" type="password"
+             placeholder="Mot de passe" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') checkPassword()" />
+      <button class="gate-btn" id="gateBtn" onclick="checkPassword()">Accéder →</button>
       <div class="gate-error" id="gateError"></div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD PANEL -->
+  <div class="gate hidden" id="pwdPanel">
+    <div class="gate-card">
+      <h2>Changer de mot de passe</h2>
+      <p>Choisis un nouveau mot de passe (8 caractères minimum).</p>
+      <input class="gate-input" id="pwdNew" type="password"
+             placeholder="Nouveau mot de passe" autocomplete="new-password"
+             onkeydown="if(event.key==='Enter') changePassword()" />
+      <input class="gate-input" id="pwdConfirm" type="password"
+             placeholder="Confirmer" autocomplete="new-password"
+             onkeydown="if(event.key==='Enter') changePassword()" />
+      <button class="gate-btn" id="pwdBtn" onclick="changePassword()">Valider</button>
+      <div class="gate-error" id="pwdError"></div>
+      <div class="topbar-title" style="margin-top:0.75rem;cursor:pointer" onclick="closePasswordPanel()">Annuler</div>
     </div>
   </div>
 
@@ -55,6 +78,8 @@
       <span class="stat-chip" id="countChip">Aucun prospect</span>
       <span class="stat-chip stat-chip-ca" id="totalChip" style="display:none"></span>
       <button class="btn-export" onclick="exportCSV()">📤 Exporter CSV</button>
+      <button class="btn-export" onclick="openPasswordPanel()" title="Changer de mot de passe">🔑</button>
+      <button class="btn-export" onclick="logout()" title="Se déconnecter">🚪</button>
     </div>
   </div>
 
@@ -179,18 +204,16 @@
             <div class="detail-grid cols-1">
               <div class="detail-field"><div class="detail-field-label">Nom</div><div class="detail-field-val" id="dp-contact-name"></div></div>
             </div>
-            <div class="detail-grid" style="margin-top:0.5rem">
-              <div class="detail-field"><div class="detail-field-label">Téléphone</div><div class="detail-field-val" id="dp-phone"></div></div>
-              <div class="detail-field"><div class="detail-field-label">Email</div><div class="detail-field-val" id="dp-email"></div></div>
+            <div class="detail-grid" id="dp-contact-row" style="margin-top:0.5rem">
+              <div class="detail-field" id="dp-field-phone"><div class="detail-field-label">Téléphone</div><div class="detail-field-val" id="dp-phone"></div></div>
+              <div class="detail-field" id="dp-field-email"><div class="detail-field-label">Email</div><div class="detail-field-val" id="dp-email"></div></div>
             </div>
           </div>
 
         </div><!-- /detail-body -->
 
         <div class="detail-footer">
-          <button class="detail-btn primary"   id="dp-btn-phone">📞 Appeler</button>
-          <button class="detail-btn secondary" id="dp-btn-email">✉️ Email</button>
-<button class="detail-btn save-btn"  id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
+          <button class="detail-btn save-btn" id="dp-btn-save" onclick="toggleSave()">🤍 Sauvegarder</button>
         </div>
       </div><!-- /detail-panel -->
 
@@ -303,7 +326,7 @@
     </div>
   </div>
 
-  <!-- JS — load order matters: config → state → map → ui → detail → lightbox → data → export → main -->
+  <!-- JS — load order matters: config → state → map → ui → detail → lightbox → data → export → main → auth -->
   <script src="js/config.js"></script>
   <script src="js/state.js"></script>
   <script src="js/map.js"></script>
@@ -315,6 +338,8 @@
   <script src="js/data.js"></script>
   <script src="js/export.js"></script>
   <script src="js/main.js"></script>
+  <!-- auth.js en dernier : dépend de applyClient (main.js) et loadGeoJSON (data.js) -->
+  <script src="js/auth.js"></script>
 
 </body>
 </html>

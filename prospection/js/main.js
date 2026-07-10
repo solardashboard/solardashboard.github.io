@@ -1,4 +1,6 @@
-// Entry point: password gate, drag & drop, and app initialisation.
+// Entry point: drag & drop and app initialisation.
+// Le password gate + le chargement du client/geojson sont gérés par auth.js
+// (Supabase Auth) — voir applyClient()/checkPassword()/logout() là-bas.
 
 // ── Client actif ────────────────────────────────────────────────────────────
 // Exposé globalement pour proposal.js et les autres modules.
@@ -23,36 +25,6 @@ function applyClient(client) {
     badge.textContent = client.name;
     badge.style.display = 'inline-flex';
     badge.style.color   = hex;
-  }
-}
-
-// ── Password gate ──────────────────────────────────────────────────────────
-(function () {
-  const savedClient = sessionStorage.getItem('sd_client');
-  if (savedClient) {
-    const client = CLIENTS[savedClient];
-    if (client) {
-      applyClient(client);
-      document.getElementById('gate').classList.add('hidden');
-    }
-  }
-})();
-
-function checkPassword() {
-  const inp    = document.getElementById('gateInput');
-  const err    = document.getElementById('gateError');
-  const pwd    = inp.value.trim();
-  const client = CLIENTS[pwd];
-
-  if (client) {
-    sessionStorage.setItem('sd_client', pwd);
-    applyClient(client);
-    document.getElementById('gate').classList.add('hidden');
-  } else {
-    err.textContent = 'Mot de passe incorrect.';
-    inp.classList.add('error');
-    inp.value = '';
-    setTimeout(() => inp.classList.remove('error'), 400);
   }
 }
 
