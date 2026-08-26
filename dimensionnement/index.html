@@ -77,6 +77,15 @@
       pointer-events: none;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
     }
+    .location-badge {
+      position: absolute; left: 0.6rem; bottom: 0.6rem;
+      background: rgba(15,23,42,0.75); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 0.35rem 0.65rem;
+      font-size: 0.72rem; font-weight: 600; color: var(--text);
+      align-items: center; gap: 0.35rem;
+      display: none;
+    }
 
     /* Centrale card */
     .centrale-card {
@@ -233,6 +242,24 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Étape téléphone (révélée au clic sur le CTA) */
+    .phone-step { display: flex; flex-direction: column; gap: 0.6rem; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .phone-input {
+      background: var(--dark-3); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: var(--text);
+      font-size: 0.95rem; font-weight: 700; font-family: inherit;
+      padding: 0.65rem 0.75rem; outline: none; width: 100%;
+      transition: border-color 0.15s;
+    }
+    .phone-input:focus { border-color: rgba(245,158,11,0.5); }
+    .phone-back {
+      background: none; border: none; color: var(--muted);
+      font-size: 0.68rem; font-family: inherit; cursor: pointer;
+      text-decoration: underline; align-self: flex-start; padding: 0;
+    }
+    .phone-back:hover { color: var(--text); }
+
     /* Optimisation banner */
     .opt-banner {
       background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.28);
@@ -302,6 +329,10 @@ const pId      = P.get('id')                  || null;
 let viewKwp  = pKwp;
 let viewProd = pProd;
 
+// ── Localisation (déduite de lat/lon, sans paramètre d'URL supplémentaire) ───
+let geoCommune = null;
+let geoCp      = null;
+
 // ── Constantes ───────────────────────────────────────────────────────────────
 const AUTOCONSO_CI   = 0.70;   // taux moyen autoconsommation C&I constaté
 const CA_PER_KWC     = 1.1;    // k€/kWp — coût installation C&I moyen
@@ -321,6 +352,28 @@ function ignUrl(lat, lon, px) {
        + `&LAYERS=${IGN_LAYER}&STYLES=&FORMAT=image/jpeg&CRS=EPSG:4326`
        + `&BBOX=${lat-buf},${lon-buf},${lat+buf},${lon+buf}`
        + `&WIDTH=${px}&HEIGHT=${px}`;
+}
+
+// ── Géocodage inverse (commune + code postal à partir de lat/lon) ────────────
+// Utilise l'API Géocodage de la Géoplateforme IGN (data.geopf.fr, gratuite, sans clé) — n'ajoute aucun
+// paramètre à l'URL de la page : tout part de lat/lon déjà présents.
+async function loadLocation() {
+  if (!pLat || !pLon) return;
+  try {
+    const res = await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${pLon}&lat=${pLat}&index=address`);
+    const data = await res.json();
+    const props = data?.features?.[0]?.properties;
+    if (!props) return;
+    geoCommune = props.city || props.label || null;
+    geoCp      = props.postcode || null;
+    const badge = document.getElementById('locationBadge');
+    if (badge && geoCommune) {
+      badge.textContent = `📍 ${geoCommune}${geoCp ? ' (' + geoCp + ')' : ''}`;
+      badge.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error('Géocodage inverse échoué', err);
+  }
 }
 
 // ── Formatage ────────────────────────────────────────────────────────────────
@@ -520,15 +573,32 @@ function step(id, delta) {
   calc();
 }
 
+// ── CTA en deux temps : révèle le champ téléphone avant l'envoi ──────────────
+function revealPhoneStep() {
+  const ctaBtn    = document.getElementById('ctaBtn');
+  const phoneStep = document.getElementById('phoneStep');
+  if (!ctaBtn || !phoneStep) return sendLead(); // fallback si markup absent
+  ctaBtn.style.display = 'none';
+  phoneStep.style.display = 'flex';
+  document.getElementById('fPhone')?.focus();
+}
+
+function hidePhoneStep() {
+  document.getElementById('ctaBtn').style.display = '';
+  document.getElementById('phoneStep').style.display = 'none';
+}
+
 // ── Envoi Web3Forms ───────────────────────────────────────────────────────────
 async function sendLead() {
-  const btn         = document.getElementById('ctaBtn');
+  const btn         = document.getElementById('ctaSendBtn') || document.getElementById('ctaBtn');
   const factureVal  = document.getElementById('fFacture').value;
   const payback     = document.getElementById('rPayback').textContent;
   const eco         = document.getElementById('rEco').textContent;
+  const phoneVal    = document.getElementById('fPhone')?.value.trim() || '';
 
   const factureModif = parseFloat(factureVal) !== pFacture;
   const id           = pId || '(non renseigné)';
+  const localisation = geoCommune ? `${geoCommune}${geoCp ? ' (' + geoCp + ')' : ''}` : '—';
 
   btn.disabled = true;
   btn.innerHTML = `<span class="cta-spinner"></span> Envoi…`;
@@ -542,6 +612,8 @@ async function sendLead() {
         subject:             `Résultat prospection client ${id}`,
         from_name:           'SolarDashboard',
         'ID prospect':       id,
+        'Téléphone':         phoneVal || '(non renseigné)',
+        'Localisation':      localisation,
         'Puissance':         `${pKwp} kWp`,
         'Production':        `${pProd} MWh/an`,
         'Consommation':      `${pConso} MWh/an`,
@@ -557,12 +629,14 @@ async function sendLead() {
     if (data.success) {
       btn.classList.add('sent');
       btn.innerHTML = '✅ Message envoyé — à bientôt !';
+      const phoneInput = document.getElementById('fPhone');
+      if (phoneInput) phoneInput.disabled = true;
     } else throw new Error(data.message);
   } catch (err) {
     console.error(err);
     btn.disabled = false;
     btn.innerHTML = '⚠️ Erreur — réessayer';
-    setTimeout(() => { btn.innerHTML = '✉️ Je suis intéressé →'; }, 3000);
+    setTimeout(() => { btn.innerHTML = '✉️ Envoyer ma demande →'; }, 3000);
   }
 }
 
@@ -604,6 +678,7 @@ function render() {
         <img src="${ignUrl(pLat, pLon, 560)}" alt="Vue aérienne"
              onerror="this.style.display='none';document.getElementById('photoPlaceholder').style.display='flex'" />
         <div class="photo-placeholder" id="photoPlaceholder"><span>🛰️</span><p>Vue satellite indisponible</p></div>
+        <div class="location-badge" id="locationBadge"></div>
         <div class="photo-marker">
           <svg width="30" height="38" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22S28 23.33 28 14C28 6.27 21.73 0 14 0z" fill="#f59e0b" opacity="0.95"/>
@@ -677,9 +752,22 @@ function render() {
       </div>
 
       <div class="cta-wrap">
-        <button class="cta-btn" id="ctaBtn" onclick="sendLead()">
+        <button class="cta-btn" id="ctaBtn" onclick="revealPhoneStep()">
           ✉️ Je suis intéressé →
         </button>
+
+        <div class="phone-step" id="phoneStep" style="display:none;">
+          <div class="field">
+            <label for="fPhone">Votre numéro de téléphone</label>
+            <input type="tel" id="fPhone" class="phone-input" placeholder="06 12 34 56 78" inputmode="tel" autocomplete="tel" />
+            <div class="field-hint">pour être rappelé(e) directement par l'installateur (facultatif)</div>
+          </div>
+          <button class="cta-btn" id="ctaSendBtn" onclick="sendLead()">
+            ✉️ Envoyer ma demande →
+          </button>
+          <button class="phone-back" onclick="hidePhoneStep()">← Annuler</button>
+        </div>
+
         <div class="cta-proof">
           Gratuit · Sans engagement<br/>
           <strong>Vous serez mis en relation avec un installateur certifié RGE</strong> qui affinera le devis et les démarches administratives.
@@ -690,6 +778,7 @@ function render() {
   `;
 
   calc();
+  loadLocation();
 }
 
 render();
